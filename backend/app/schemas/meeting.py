@@ -1,9 +1,10 @@
 from datetime import datetime
+from urllib.parse import quote
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models import Meeting, MeetingAccess, MeetingStatus, MeetingType
+from app.models import Meeting, MeetingAccess, MeetingStatus, MeetingType, User
 from app.schemas.participant import ParticipantOut
 from app.schemas.user import UserOut
 
@@ -43,18 +44,23 @@ class MeetingOut(BaseModel):
     invite_link: str
 
     @classmethod
-    def from_model(cls, meeting: Meeting, frontend_origin: str) -> "MeetingOut":
-        out = cls.model_validate(
+    def from_model(
+        cls, meeting: Meeting, frontend_origin: str, viewer: User | None = None
+    ) -> "MeetingOut":
+        """Build the response. Only the host gets the passcode in `invite_link` (`?pwd=`)."""
+        link = f"{frontend_origin.rstrip('/')}/j/{meeting.meeting_code}"
+        if meeting.passcode and viewer is not None and viewer.id == meeting.host_id:
+            link += f"?pwd={quote(meeting.passcode, safe='')}"
+        return cls.model_validate(
             {
                 **{
                     name: getattr(meeting, name)
                     for name in cls.model_fields
                     if name != "invite_link"
                 },
-                "invite_link": f"{frontend_origin.rstrip('/')}/j/{meeting.meeting_code}",
+                "invite_link": link,
             }
         )
-        return out
 
 
 class MeetingLookup(BaseModel):
