@@ -6,7 +6,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
-from app.core.security import create_ws_ticket
+from app.core.security import create_rejoin_token, create_ws_ticket, verify_rejoin_token
 from app.models import (
     Meeting,
     MeetingAccess,
@@ -18,7 +18,7 @@ from app.models import (
 )
 from app.schemas.meeting import InstantMeetingIn, JoinIn, MeetingPatch, ScheduleMeetingIn
 from app.schemas.participant import ParticipantOut
-from app.services.room_manager import room_manager
+from app.services.room_manager import CLOSE_MEETING_ENDED, room_manager
 
 CODE_ATTEMPTS = 10
 
@@ -197,16 +197,36 @@ def end_meeting(db: Session, meeting: Meeting, user: User) -> Meeting:
     db.commit()
     db.refresh(meeting)
     room_manager.broadcast(meeting.meeting_code, {"type": "meeting_ended"})
+    room_manager.close_room(meeting.meeting_code, CLOSE_MEETING_ENDED, "meeting_ended")
     return meeting
 
 
 # ---- join -------------------------------------------------------------------
 
 
+def _rejoin_row(
+    db: Session, meeting: Meeting, user: User | None, token: str | None
+) -> Participant | None:
+    """Return the row that a rejoin token names, if the token belongs to this caller."""
+    claims = verify_rejoin_token(token) if token else None
+    if claims is None or claims.get("mid") != meeting.id:
+        return None
+    participant = db.get(Participant, claims.get("pid"))
+    owner_id = user.id if user else None
+    if participant is None or participant.meeting_id != meeting.id:
+        return None
+    if participant.user_id != owner_id:
+        return None
+    return participant
+
+
 def join_meeting(
     db: Session, meeting: Meeting, user: User | None, data: JoinIn
-) -> tuple[Participant, str]:
-    """Apply the join rules. Order: ended, access, removed, passcode."""
+) -> tuple[Participant, str, str]:
+    """Apply the join rules. Order: ended, access, removed, passcode.
+
+    Returns the participant, a WebSocket ticket, and a rejoin token.
+    """
     if meeting.status == MeetingStatus.ended:
         raise AppError(410, "meeting_ended", "The meeting has ended.")
 
@@ -226,12 +246,16 @@ def join_meeting(
         if was_removed and not is_host:
             raise AppError(403, "removed_from_meeting", "The host removed you from this meeting.")
 
+    # A rejoin token gives back the same row after a dropped connection (guests too).
+    participant = _rejoin_row(db, meeting, user, data.rejoin_token)
+    if participant is not None and participant.removed:
+        raise AppError(403, "removed_from_meeting", "The host removed you from this meeting.")
+
     # The host does not need the passcode. Everyone else does.
     if meeting.passcode and not is_host and data.passcode != meeting.passcode:
         raise AppError(403, "bad_passcode", "The passcode is not correct.")
 
-    participant = None
-    if user is not None:
+    if participant is None and user is not None:
         # A signed-in user who is still in the room keeps the same row (second tab, reload).
         participant = db.scalar(
             select(Participant).where(
@@ -240,7 +264,8 @@ def join_meeting(
                 Participant.left_at.is_(None),
             )
         )
-    is_new = participant is None
+    # The room hears about a new row, or an old row that comes back after it left.
+    is_new = participant is None or participant.left_at is not None
     if participant is None:
         participant = Participant(
             meeting_id=meeting.id,
@@ -249,6 +274,8 @@ def join_meeting(
             role=ParticipantRole.host if is_host else ParticipantRole.attendee,
         )
         db.add(participant)
+    else:
+        participant.left_at = None
 
     if is_host and meeting.status == MeetingStatus.scheduled:
         meeting.status = MeetingStatus.live
@@ -257,12 +284,14 @@ def join_meeting(
     db.commit()
     db.refresh(participant)
     ticket = create_ws_ticket(participant.id, meeting.id)
+    rejoin_token = create_rejoin_token(participant.id, meeting.id)
     if is_new:
-        room_manager.broadcast(
-            meeting.meeting_code,
-            {
-                "type": "participant_joined",
-                "participant": ParticipantOut.model_validate(participant).model_dump(mode="json"),
-            },
-        )
-    return participant, ticket
+        room_manager.broadcast(meeting.meeting_code, joined_event(participant))
+    return participant, ticket, rejoin_token
+
+
+def joined_event(participant: Participant) -> dict:
+    return {
+        "type": "participant_joined",
+        "participant": ParticipantOut.model_validate(participant).model_dump(mode="json"),
+    }

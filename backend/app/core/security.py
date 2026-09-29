@@ -71,3 +71,16 @@ def create_ws_ticket(participant_id: int, meeting_id: int) -> str:
 def verify_ws_ticket(token: str) -> dict | None:
     """Return the ticket claims (pid, mid, jti), or None if invalid or expired."""
     return _decode(token, "ws")
+
+
+def create_rejoin_token(participant_id: int, meeting_id: int) -> str:
+    """A signed token that lets the same participant join again after a dropped connection."""
+    return _encode(
+        {"typ": "rejoin", "pid": participant_id, "mid": meeting_id},
+        timedelta(hours=get_settings().rejoin_token_hours),
+    )
+
+
+def verify_rejoin_token(token: str) -> dict | None:
+    """Return the token claims (pid, mid), or None if invalid or expired."""
+    return _decode(token, "rejoin")

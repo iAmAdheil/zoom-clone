@@ -4,7 +4,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
-from app.routers import auth, meetings, participants
+from app.routers import auth, meetings, participants, ws
 
 
 def create_app() -> FastAPI:
@@ -32,6 +32,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(meetings.router)
     app.include_router(participants.router)
+    app.include_router(ws.router)
 
     @app.get("/api/health", tags=["health"])
     def health() -> dict:

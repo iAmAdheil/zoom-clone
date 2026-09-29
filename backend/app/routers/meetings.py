@@ -73,10 +73,11 @@ def delete(meeting_id: int, user: CurrentUserDep, db: DbDep) -> None:
 @router.post("/{code}/join")
 def join(code: str, data: JoinIn, user: OptionalUserDep, db: DbDep) -> JoinOut:
     meeting = svc.get_by_code(db, code)
-    participant, ticket = svc.join_meeting(db, meeting, user, data)
+    participant, ticket, rejoin_token = svc.join_meeting(db, meeting, user, data)
     return JoinOut(
         participant=ParticipantOut.model_validate(participant),
         ws_ticket=ticket,
+        rejoin_token=rejoin_token,
         meeting=_out(meeting),
     )
 

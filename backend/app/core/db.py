@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
@@ -31,3 +31,9 @@ SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 def get_db() -> Iterator[Session]:
     with SessionLocal() as session:
         yield session
+
+
+def get_session_factory() -> Callable[[], Session]:
+    """For the WebSocket endpoint. A socket lives for a long time, so it opens a short
+    session for each step. It does not keep one session open for its whole life."""
+    return SessionLocal

@@ -19,7 +19,7 @@ The API runs on http://localhost:8000. The interactive docs are at `/docs`.
 | Name | Purpose |
 |---|---|
 | `DATABASE_URL` | SQLAlchemy URL. Default is a local SQLite file. |
-| `JWT_SECRET` | Signs the session cookie and the WebSocket tickets. |
+| `JWT_SECRET` | Signs the session cookie, the WebSocket tickets, and the rejoin tokens. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth. If empty, the Google routes return 503 `google_not_configured`. |
 | `FRONTEND_ORIGIN` | CORS origin, invite link base, and Google callback base. |
 | `ENABLE_DEMO_LOGIN` | `true` enables `POST /api/auth/demo`. |
@@ -50,7 +50,10 @@ The tests use an in-memory SQLite database. They do not need a `.env` file.
 
 - `app/routers/`: thin HTTP handlers.
 - `app/services/`: business rules (join rules, meeting rules, participant controls).
-- `app/services/room_manager.py`: hook for the WebSocket task. Services call `room_manager.broadcast`. It does nothing yet.
+- `app/routers/ws.py`: the meeting WebSocket, `/ws/meetings/{code}?ticket=...`.
+- `app/services/room_manager.py`: open sockets per meeting. Services call `room_manager.broadcast` from sync or async code.
+- `app/services/room_service.py`: WebSocket rules (ticket check, snapshot, client events, leave).
+- `app/services/ticket_registry.py`: makes each WebSocket ticket single use (in memory).
 - `app/models/`, `app/schemas/`: database tables and API shapes.
 - `alembic/`: migrations. Create a new one with `uv run alembic revision --autogenerate -m "message"`.
 

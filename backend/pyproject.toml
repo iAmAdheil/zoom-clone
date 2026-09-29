@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.0",
+    "asyncer>=0.0.18",
     "authlib>=1.8.0",
     "fastapi[standard]>=0.142.0",
     "httpx>=0.28.1",
@@ -17,6 +18,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "pytest-timeout>=2.4.0",
     "ruff>=0.16.9",
 ]
 
@@ -29,6 +31,8 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# A WebSocket test that waits for an event that never comes fails instead of hanging.
+timeout = 20
 pythonpath = ["."]
 
 [tool.fastapi]
