@@ -1,8 +1,8 @@
 import re
 import secrets
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -21,6 +21,8 @@ from app.schemas.participant import ParticipantOut
 from app.services.room_manager import CLOSE_MEETING_ENDED, room_manager
 
 CODE_ATTEMPTS = 10
+# A scheduled meeting with no duration stays upcoming this long after its start.
+DEFAULT_GRACE_MIN = 15
 
 
 def now() -> datetime:
@@ -117,32 +119,47 @@ def create_scheduled(db: Session, host: User, data: ScheduleMeetingIn) -> Meetin
 # ---- lists ------------------------------------------------------------------
 
 
+def scheduled_end(meeting: Meeting) -> datetime | None:
+    """When a scheduled meeting's window closes: start + duration (or the grace time)."""
+    if meeting.scheduled_start is None:
+        return None
+    minutes = meeting.duration_min if meeting.duration_min is not None else DEFAULT_GRACE_MIN
+    return _as_utc(meeting.scheduled_start) + timedelta(minutes=minutes)
+
+
+def _lapsed(meeting: Meeting, at: datetime) -> bool:
+    """True for a scheduled meeting that nobody started and whose window is over."""
+    end = scheduled_end(meeting)
+    return meeting.status == MeetingStatus.scheduled and end is not None and end <= at
+
+
 def list_upcoming(db: Session, user: User) -> list[Meeting]:
+    """Scheduled meetings the user hosts, until start + duration has passed."""
+    at = now()
     stmt = (
         select(Meeting)
-        .where(
-            Meeting.host_id == user.id,
-            Meeting.status == MeetingStatus.scheduled,
-            Meeting.scheduled_start >= now(),
-        )
+        .where(Meeting.host_id == user.id, Meeting.status == MeetingStatus.scheduled)
         .order_by(Meeting.scheduled_start.asc())
     )
-    return list(db.scalars(stmt))
+    return [m for m in db.scalars(stmt) if not _lapsed(m, at)]
 
 
 def list_recent(db: Session, user: User, limit: int) -> list[Meeting]:
-    """Live or ended meetings the user hosted or joined, newest first."""
+    """Live or ended meetings, and lapsed scheduled ones, that the user hosted or joined."""
+    at = now()
     joined = select(Participant.meeting_id).where(Participant.user_id == user.id)
-    stmt = (
-        select(Meeting)
-        .where(
-            or_(Meeting.host_id == user.id, Meeting.id.in_(joined)),
-            Meeting.status != MeetingStatus.scheduled,
-        )
-        .order_by(func.coalesce(Meeting.started_at, Meeting.scheduled_start).desc())
-        .limit(limit)
+    stmt = select(Meeting).where(
+        or_(Meeting.host_id == user.id, Meeting.id.in_(joined)),
+        # Coarse filter in SQL. `_lapsed` checks the exact end time below.
+        or_(Meeting.status != MeetingStatus.scheduled, Meeting.scheduled_start <= at),
     )
-    return list(db.scalars(stmt))
+    meetings = [
+        m for m in db.scalars(stmt) if m.status != MeetingStatus.scheduled or _lapsed(m, at)
+    ]
+    meetings.sort(
+        key=lambda m: _as_utc(m.started_at or m.scheduled_start or m.created_at), reverse=True
+    )
+    return meetings[:limit]
 
 
 # ---- edit, cancel, end ------------------------------------------------------

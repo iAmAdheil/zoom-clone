@@ -9,6 +9,7 @@ from app.routers import auth, meetings, participants, ws
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    settings.check_secrets()
     app = FastAPI(title="Zoom Clone API")
     install_error_handlers(app)
 

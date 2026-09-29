@@ -44,13 +44,13 @@ All times are UTC ISO-8601 in the API. The UI shows the user's local time.
 
 Rules:
 - Recent meetings for a user = meetings where the user is host or has a participant row, ordered by `started_at` or `scheduled_start` descending, limited by a query parameter.
-- Upcoming meetings = `status = scheduled` and `scheduled_start >= now`, ordered ascending.
+- Upcoming meetings = the user hosts them, `status = scheduled`, and `scheduled_start + duration_min` (15 minutes if null) has not passed, ordered ascending. A scheduled meeting that nobody started and whose end passed shows in Recent, with `status` unchanged.
 - Meeting codes are random 10-digit numbers. The service retries on a collision.
 
 ## Realtime room (FastAPI WebSocket)
 - One channel per meeting. It carries participant state only: join, leave, mute, video toggle, remove, end.
 - No media goes through it. Media is local camera and microphone preview (`getUserMedia`).
-- The channel design allows WebRTC signaling messages later (`offer`, `answer`, `ice`). This is a stretch task.
+- The channel relays WebRTC signaling messages (`signal`) between two participants. The server never reads their `data` (see `api.md`).
 
 ## Backend layout
 ```
@@ -76,6 +76,6 @@ frontend/src/
 ```
 
 ## Environment variables
-Backend: `DATABASE_URL`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_ORIGIN`, `ENABLE_DEMO_LOGIN`.
+Backend: `ENVIRONMENT` (`development` by default; the server refuses to start in `production` with the default `JWT_SECRET`), `DATABASE_URL`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_ORIGIN`, `ENABLE_DEMO_LOGIN`.
 Frontend: `BACKEND_URL`, `NEXT_PUBLIC_WS_URL`.
 Never commit real values. Commit `.env.example` files.

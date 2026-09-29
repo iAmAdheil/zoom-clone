@@ -3,6 +3,7 @@
 Each function gets a short-lived session from the router. The router closes it.
 """
 
+import json
 from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
@@ -11,11 +12,16 @@ from app.core.errors import AppError
 from app.core.security import verify_ws_ticket
 from app.models import Meeting, MeetingStatus, Participant
 from app.schemas.participant import ParticipantOut
-from app.schemas.ws import SetMuted, SetVideoOff
+from app.schemas.ws import SetMuted, SetVideoOff, Signal
 from app.services.meeting_service import get_by_code, joined_event, now
 from app.services.participant_service import list_participants, updated_event
 from app.services.room_manager import room_manager
 from app.services.ticket_registry import used_tickets
+
+# The limit for `data` of a `signal`, as compact JSON in UTF-8 bytes.
+MAX_SIGNAL_BYTES = 16 * 1024
+# The most bytes a raw client message may have before the server parses it.
+MAX_MESSAGE_BYTES = MAX_SIGNAL_BYTES + 1024
 
 
 @dataclass(frozen=True)
@@ -69,6 +75,7 @@ def enter_room(db: Session, seat: Seat) -> dict:
         room_manager.broadcast(seat.meeting_code, joined_event(participant))
     snapshot = {
         "type": "snapshot",
+        "connected_ids": connected_ids(seat.meeting_code),
         "participants": [
             ParticipantOut.model_validate(p).model_dump(mode="json")
             for p in list_participants(db, meeting)
@@ -101,3 +108,44 @@ def leave_room(db: Session, seat: Seat) -> None:
     room_manager.broadcast(
         seat.meeting_code, {"type": "participant_left", "participant_id": participant.id}
     )
+
+
+def connected_ids(meeting_code: str) -> list[int]:
+    """The ids of the participants that have an open socket in the room, ascending."""
+    return sorted({c.participant_id for c in room_manager.connections(meeting_code)})
+
+
+def error_event(code: str, detail: str) -> dict:
+    return {"type": "error", "code": code, "detail": detail}
+
+
+def _in_room(db: Session, seat: Seat, participant_id: int) -> bool:
+    """True if the participant is in this meeting, has not left or been removed."""
+    participant = db.get(Participant, participant_id)
+    return (
+        participant is not None
+        and participant.meeting_id == seat.meeting_id
+        and not participant.removed
+        and participant.left_at is None
+    )
+
+
+def relay_signal(db: Session, seat: Seat, event: Signal) -> dict | None:
+    """Send `data` to the target only. Return an `error` event for the sender, or None.
+
+    The server never reads `data`. The room manager keeps one room per meeting code,
+    so a signal cannot cross meetings.
+    """
+    if not _in_room(db, seat, seat.participant_id):
+        return None  # The sender left or was removed. Its socket closes soon.
+    connected = event.to in connected_ids(seat.meeting_code)
+    if event.to == seat.participant_id or not connected or not _in_room(db, seat, event.to):
+        return error_event("bad_target", "The target is not connected to this meeting.")
+    if len(json.dumps(event.data, separators=(",", ":")).encode()) > MAX_SIGNAL_BYTES:
+        return error_event("payload_too_large", "The signal data is larger than 16 KB.")
+    room_manager.send_to_participant(
+        seat.meeting_code,
+        event.to,
+        {"type": "signal", "from": seat.participant_id, "data": event.data},
+    )
+    return None

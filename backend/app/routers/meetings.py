@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from app.core.config import get_settings
+from app.models import User
 from app.routers.deps import CurrentUserDep, DbDep, OptionalUserDep
 from app.schemas.meeting import (
     InstantMeetingIn,
@@ -19,30 +20,30 @@ from app.services import meeting_service as svc
 router = APIRouter(prefix="/api/meetings", tags=["meetings"])
 
 
-def _out(meeting) -> MeetingOut:
-    return MeetingOut.from_model(meeting, get_settings().frontend_origin)
+def _out(meeting, viewer: User | None) -> MeetingOut:
+    return MeetingOut.from_model(meeting, get_settings().frontend_origin, viewer)
 
 
 @router.post("/instant")
 def create_instant(data: InstantMeetingIn, user: CurrentUserDep, db: DbDep) -> MeetingOut:
-    return _out(svc.create_instant(db, user, data))
+    return _out(svc.create_instant(db, user, data), user)
 
 
 @router.post("")
 def schedule(data: ScheduleMeetingIn, user: CurrentUserDep, db: DbDep) -> MeetingOut:
-    return _out(svc.create_scheduled(db, user, data))
+    return _out(svc.create_scheduled(db, user, data), user)
 
 
 @router.get("/upcoming")
 def upcoming(user: CurrentUserDep, db: DbDep) -> list[MeetingOut]:
-    return [_out(m) for m in svc.list_upcoming(db, user)]
+    return [_out(m, user) for m in svc.list_upcoming(db, user)]
 
 
 @router.get("/recent")
 def recent(
     user: CurrentUserDep, db: DbDep, limit: Annotated[int, Query(ge=1, le=100)] = 20
 ) -> list[MeetingOut]:
-    return [_out(m) for m in svc.list_recent(db, user, limit)]
+    return [_out(m, user) for m in svc.list_recent(db, user, limit)]
 
 
 @router.get("/{code}")
@@ -61,7 +62,7 @@ def lookup(code: str, db: DbDep) -> MeetingLookup:
 @router.patch("/{meeting_id}")
 def patch(meeting_id: int, data: MeetingPatch, user: CurrentUserDep, db: DbDep) -> MeetingOut:
     meeting = svc.get_by_id(db, meeting_id)
-    return _out(svc.update_meeting(db, meeting, user, data))
+    return _out(svc.update_meeting(db, meeting, user, data), user)
 
 
 @router.delete("/{meeting_id}", status_code=204)
@@ -78,11 +79,11 @@ def join(code: str, data: JoinIn, user: OptionalUserDep, db: DbDep) -> JoinOut:
         participant=ParticipantOut.model_validate(participant),
         ws_ticket=ticket,
         rejoin_token=rejoin_token,
-        meeting=_out(meeting),
+        meeting=_out(meeting, user),
     )
 
 
 @router.post("/{code}/end")
 def end(code: str, user: CurrentUserDep, db: DbDep) -> MeetingOut:
     meeting = svc.get_by_code(db, code)
-    return _out(svc.end_meeting(db, meeting, user))
+    return _out(svc.end_meeting(db, meeting, user), user)

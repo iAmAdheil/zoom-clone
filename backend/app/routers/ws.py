@@ -1,7 +1,7 @@
 """The meeting WebSocket: /ws/meetings/{code}?ticket=<ws_ticket>.
 
 Each socket runs two tasks:
-- The reader applies client events (`set_muted`, `set_video_off`, `leave`).
+- The reader applies client events (`set_muted`, `set_video_off`, `leave`, `signal`).
 - The writer sends the queue that the room manager fills, then closes on a `Close` item.
 
 Database work runs in a worker thread with a short session, so it does not block the loop.
@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_session_factory
 from app.core.errors import AppError
-from app.schemas.ws import Leave, client_event_adapter
+from app.schemas.ws import Leave, Signal, client_event_adapter
 from app.services import room_service
 from app.services.room_manager import CLOSE_NORMAL, Close, Connection, room_manager
 from app.services.room_service import Seat
@@ -64,8 +64,13 @@ async def _read_loop(
         message = await websocket.receive()
         if message["type"] == "websocket.disconnect":
             return
+        text = message.get("text") or ""
+        if len(text.encode()) > room_service.MAX_MESSAGE_BYTES:
+            # Do not parse a huge message. It cannot hold a `signal` within the limit.
+            conn.push(room_service.error_event("payload_too_large", "The message is too large."))
+            continue
         try:
-            event = client_event_adapter.validate_json(message.get("text") or "")
+            event = client_event_adapter.validate_json(text)
         except ValidationError:
             conn.push({"type": "error", "code": "bad_event", "detail": "Unknown or bad event."})
             continue
@@ -74,6 +79,10 @@ async def _read_loop(
             room_manager.close_participant(
                 seat.meeting_code, seat.participant_id, CLOSE_NORMAL, "left"
             )
+        elif isinstance(event, Signal):
+            error = await _with_db(open_db, room_service.relay_signal, seat, event)
+            if error is not None:
+                conn.push(error)
         else:
             await _with_db(open_db, room_service.set_media_state, seat, event)
 
