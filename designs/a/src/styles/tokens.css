@@ -1,0 +1,104 @@
+/*
+ * Design A tokens: the single source for colors, radii, spacing, shadows and fonts.
+ *
+ * Tailwind v4 reads its theme from this @theme block (Tailwind v4 has no
+ * tailwind.config.js). Each variable makes a utility class, for example
+ * --color-primary -> bg-primary, --radius-tile -> rounded-tile.
+ *
+ * The default Tailwind palette is removed (--color-*: initial), so a component
+ * can only use the colors below. Values come from the Zoom web client and the
+ * Zoom web portal screens listed in DESIGN_NOTES.md.
+ */
+@theme {
+  /* Remove the default Tailwind palette. */
+  --color-*: initial;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+
+  /* Brand and actions */
+  --color-primary: #0e72ed;
+  --color-primary-hover: #0b63d1;
+  --color-primary-active: #0955b5;
+  --color-primary-soft: #e8f1fd;
+  --color-accent: #ff742e; /* New Meeting tile */
+  --color-accent-hover: #f2641c;
+  --color-danger: #e02828; /* Leave / End, muted mic */
+  --color-danger-hover: #c41f1f;
+  --color-danger-soft: #fdecec;
+  --color-success: #0fb35c; /* Share Screen, unmuted mic */
+  --color-success-hover: #0c9c50;
+  --color-warning-soft: #fff4e5;
+  --color-warning-ink: #8a4b00;
+
+  /* Light surfaces (portal, sign in, forms) */
+  --color-ink: #232333;
+  --color-ink-2: #39394d;
+  --color-ink-muted: #747487;
+  --color-ink-subtle: #9999aa;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f7f7fa;
+  --color-surface-hover: #f1f4f9;
+  --color-line: #ededf4;
+  --color-line-strong: #babacc;
+
+  /* Dark surfaces (meeting room) */
+  --color-room-bg: #111111;
+  --color-room-bar: #1a1a1a;
+  --color-room-tile: #242424;
+  --color-room-hover: #2f2f2f;
+  --color-room-press: #3a3a3a;
+  --color-room-line: #333333;
+  --color-room-text: #ffffff;
+  --color-room-muted: #a6a6b0;
+  --color-room-overlay: rgb(0 0 0 / 0.6);
+  --color-room-popover: #2b2b2b;
+  --color-room-link: #4a9cff;
+  --color-speaker: #b6e45a; /* Active speaker frame */
+  --color-scrim: rgb(19 19 31 / 0.45);
+
+  /* Tile placeholders for "camera on" mock feeds */
+  --color-feed-1: #3b4a5c;
+  --color-feed-2: #4d3f55;
+  --color-feed-3: #2f4f48;
+  --color-feed-4: #5a4a3a;
+  --color-feed-5: #3a4660;
+  --color-feed-6: #50404a;
+
+  /* Avatar backgrounds */
+  --color-avatar-1: #0e72ed;
+  --color-avatar-2: #7c4dff;
+  --color-avatar-3: #00a39e;
+  --color-avatar-4: #f25c05;
+  --color-avatar-5: #d6336c;
+  --color-avatar-6: #3f8f29;
+
+  /* Fonts */
+  --font-sans: var(--font-lato), "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Font sizes that Zoom uses and Tailwind does not have */
+  --text-2xs: 0.6875rem; /* 11px toolbar labels */
+  --text-2xs--line-height: 1rem;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px; /* buttons, inputs */
+  --radius-lg: 12px; /* cards, popovers, video tiles */
+  --radius-xl: 16px;
+  --radius-tile: 22px; /* dashboard action tiles */
+
+  /* Layout sizes (usable as h-header, w-sidenav, w-panel, ...) */
+  --spacing-header: 64px;
+  --spacing-sidenav: 232px;
+  --spacing-toolbar: 64px;
+  --spacing-roombar: 40px;
+  --spacing-panel: 340px;
+  --spacing-tile-btn: 88px;
+  --spacing-form: 640px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgb(35 35 51 / 0.06), 0 2px 8px rgb(35 35 51 / 0.06);
+  --shadow-popover: 0 8px 24px rgb(0 0 0 / 0.24);
+  --shadow-tile: 0 2px 6px rgb(0 0 0 / 0.12);
+}
