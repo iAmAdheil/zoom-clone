@@ -20,3 +20,10 @@ Source brief: `ASSIGNMENT.pdf`. Stack: Next.js (frontend), FastAPI (backend), SQ
 - Simple, well-scoped task: agent type `worker-simple` (Sonnet 5.5, high effort).
 - Complex task, or any design task: agent type `worker-complex` (Opus 5.5, high effort).
 - The lead may raise the effort for a hard task. The lead may not go below medium.
+
+## QA gate and deploy (before release)
+- Before deploy, the lead runs a full QA pass on the merged `main`.
+- Use 4 to 5 separate browser contexts (host, verified user, guest, second guest, mobile viewport) with Playwright. Start Chromium with fake media flags (`--use-fake-device-for-media-stream --use-fake-ui-for-media-stream`) so camera and microphone tests run.
+- Test: login (demo and Google), instant meeting, schedule, join by ID and link, access setting (`verified_only` vs `allow_guests`), passcode, host mute, mute all, remove, end meeting, reconnect, camera and microphone preview and toggles, responsive layouts, error states.
+- Write the findings in `docs/qa-report.md`. Fix or ticket each bug. Deploy only after the blocking bugs are fixed.
+- Deploy: frontend on Vercel, backend on Render or Railway. Deploy needs the user's login and approval for each service.
