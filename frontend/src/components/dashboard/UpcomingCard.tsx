@@ -1,14 +1,25 @@
+"use client";
+
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
-import { Icon } from "@/components/ui/Icon";
-import { dayKey, formatDay, formatMeetingCode, formatTime, formatTimeRange } from "@/lib/format";
+import { errorMessage } from "@/lib/api";
+import { formatDay, formatMeetingCode, formatRelativeDay, formatTime, formatTimeRange } from "@/lib/format";
 import type { Meeting } from "@/lib/types";
+import { ListMessage } from "./ListMessage";
+import { AccessBadge, CopyInviteButton } from "./MeetingRowBits";
 
-type UpcomingCardProps = { now: string; meetings: Meeting[] };
+type UpcomingCardProps = {
+  /** Current time in ms, or null before the browser clock is known. */
+  now: number | null;
+  meetings: Meeting[] | undefined;
+  error: unknown;
+  onRetry: () => void;
+  onCopied: (message: string) => void;
+};
 
 /** Right-hand card of the Zoom Home screen: clock banner plus the upcoming list. */
-export function UpcomingCard({ now, meetings }: UpcomingCardProps) {
-  const today = dayKey(now);
+export function UpcomingCard({ now, meetings, error, onRetry, onCopied }: UpcomingCardProps) {
+  const nowDate = now === null ? null : new Date(now);
 
   return (
     <section
@@ -22,8 +33,11 @@ export function UpcomingCard({ now, meetings }: UpcomingCardProps) {
           <div className="absolute -bottom-20 left-10 size-48 rounded-full bg-avatar-2 opacity-30 blur-2xl" />
         </div>
         <div className="relative">
-          <p className="text-4xl font-bold tracking-tight sm:text-5xl">{formatTime(now)}</p>
-          <p className="mt-1 text-sm text-white/80">{formatDay(now)}</p>
+          {/* The non-breaking space keeps the banner height before the clock is known. */}
+          <p className="text-4xl font-bold tracking-tight sm:text-5xl">
+            {nowDate ? formatTime(nowDate.toISOString()) : " "}
+          </p>
+          <p className="mt-1 text-sm text-white/80">{nowDate ? formatDay(nowDate.toISOString()) : " "}</p>
         </div>
       </div>
 
@@ -36,13 +50,19 @@ export function UpcomingCard({ now, meetings }: UpcomingCardProps) {
         </Link>
       </div>
 
-      {meetings.length === 0 ? (
-        <p className="px-5 pb-6 text-sm text-ink-muted">No upcoming meetings today.</p>
+      {error ? (
+        <ListMessage tone="error" onRetry={onRetry} className="px-5 pb-6">
+          {errorMessage(error)}
+        </ListMessage>
+      ) : !meetings || !nowDate ? (
+        <ListMessage className="px-5 pb-6">Loading meetings...</ListMessage>
+      ) : meetings.length === 0 ? (
+        <ListMessage className="px-5 pb-6">No upcoming meetings. Use Schedule to plan one.</ListMessage>
       ) : (
         <ul className="divide-y divide-line px-2 pb-2">
           {meetings.map((m) => {
-            const start = m.scheduled_start ?? now;
-            const isToday = dayKey(start) === today;
+            const start = m.scheduled_start ?? nowDate.toISOString();
+            const day = formatRelativeDay(start, nowDate);
             return (
               <li
                 key={m.id}
@@ -50,22 +70,24 @@ export function UpcomingCard({ now, meetings }: UpcomingCardProps) {
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-ink-muted">
-                    {isToday ? "Today" : "Tomorrow"}, {formatTimeRange(start, m.duration_min ?? 30)}
+                    {day}, {formatTimeRange(start, m.duration_min ?? 30)}
                   </p>
                   <p className="mt-0.5 truncate text-sm font-bold text-ink">{m.title}</p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-muted">
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
                     Meeting ID: {formatMeetingCode(m.meeting_code)}
-                    {m.access === "verified_only" ? (
-                      <span title="Only signed-in users can join" className="inline-flex items-center">
-                        <Icon name="lock" size={12} />
-                        <span className="sr-only">Signed-in users only</span>
-                      </span>
-                    ) : null}
+                    <AccessBadge access={m.access} />
                   </p>
                 </div>
-                <ButtonLink href={`/meeting/${m.meeting_code}`} size="sm" variant={isToday ? "primary" : "secondary"}>
-                  Start
-                </ButtonLink>
+                <div className="flex shrink-0 items-center gap-1">
+                  <CopyInviteButton meeting={m} onCopied={onCopied} />
+                  <ButtonLink
+                    href={`/meeting/${m.meeting_code}`}
+                    size="sm"
+                    variant={day === "Today" ? "primary" : "secondary"}
+                  >
+                    Start
+                  </ButtonLink>
+                </div>
               </li>
             );
           })}

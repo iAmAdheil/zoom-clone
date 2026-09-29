@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 import { initials } from "@/lib/format";
 
@@ -19,6 +20,8 @@ function toneFor(name: string) {
 
 type AvatarProps = {
   name: string;
+  /** Profile picture (Google). Without it the avatar shows the initials. */
+  src?: string | null;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   shape?: "circle" | "square";
   className?: string;
@@ -32,7 +35,28 @@ const sizes = {
   xl: "size-24 text-3xl",
 };
 
-export function Avatar({ name, size = "md", shape = "circle", className }: AvatarProps) {
+const pixels = { xs: 24, sm: 32, md: 40, lg: 64, xl: 96 };
+
+export function Avatar({ name, src, size = "md", shape = "circle", className }: AvatarProps) {
+  if (src) {
+    return (
+      <Image
+        src={src}
+        alt=""
+        width={pixels[size]}
+        height={pixels[size]}
+        // Google serves the picture already small. no-referrer stops Google from blocking it.
+        unoptimized
+        referrerPolicy="no-referrer"
+        className={cn(
+          "shrink-0 object-cover select-none",
+          shape === "circle" ? "rounded-full" : "rounded-md",
+          sizes[size],
+          className,
+        )}
+      />
+    );
+  }
   return (
     <span
       aria-hidden="true"

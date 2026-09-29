@@ -1,5 +1,9 @@
 # Design A notes
 
+> This file records the Design A mockup. The code now lives in `frontend/`, and the real API
+> replaced the mock data (see `frontend/README.md`). Screenshots of the mockup are in
+> `docs/reference/design-a/`.
+
 Design A is the closest copy of the current Zoom web client that we can make.
 The meeting room is dark. The portal (dashboard, schedule) is light.
 

@@ -5,17 +5,36 @@ import { useState, type FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Check, Select, TextArea, TextInput } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
-import { MOCK_NOW, demoUser, upcomingMeetings } from "@/lib/mock";
-import type { MeetingAccess } from "@/lib/types";
+import { ApiError, api, errorMessage } from "@/lib/api";
+import { useUser } from "@/lib/auth";
+import { dayKey } from "@/lib/format";
+import { refreshMeetingLists } from "@/lib/queries";
+import { browserTimeZone, gmtOffsetLabel, zonedTimeToUtc } from "@/lib/timezone";
+import type { Meeting, MeetingAccess, ScheduleMeetingInput } from "@/lib/types";
 import { FormRow } from "./FormRow";
-import { ScheduledSummary, type ScheduledMeeting } from "./ScheduledSummary";
+import { ScheduledSummary } from "./ScheduledSummary";
 
-const TIMEZONES = [
-  { value: "Asia/Kolkata", label: "(GMT+5:30) India", offset: "+05:30" },
-  { value: "Europe/London", label: "(GMT+1:00) London", offset: "+01:00" },
-  { value: "America/New_York", label: "(GMT-4:00) Eastern Time (US and Canada)", offset: "-04:00" },
-  { value: "America/Los_Angeles", label: "(GMT-7:00) Pacific Time (US and Canada)", offset: "-07:00" },
-] as const;
+// Time zones in the picker. The browser time zone is added first when it is not in the list.
+const ZONES = [
+  { value: "Asia/Kolkata", name: "India" },
+  { value: "Europe/London", name: "London" },
+  { value: "America/New_York", name: "Eastern Time (US and Canada)" },
+  { value: "America/Los_Angeles", name: "Pacific Time (US and Canada)" },
+  { value: "UTC", name: "Coordinated Universal Time" },
+];
+
+type ZoneOption = { value: string; label: string };
+
+/** The browser zone goes first. Aliases count as the same zone ("Asia/Calcutta" is "Asia/Kolkata"). */
+function zoneOptions(browserZone: string): ZoneOption[] {
+  const canonical = (zone: string) => new Intl.DateTimeFormat("en-US", { timeZone: zone }).resolvedOptions().timeZone;
+  const own = canonical(browserZone);
+  const match = ZONES.find((z) => canonical(z.value) === own);
+  const zones = match
+    ? [match, ...ZONES.filter((z) => z !== match)]
+    : [{ value: browserZone, name: browserZone.replace(/_/g, " ") }, ...ZONES];
+  return zones.map((z) => ({ value: z.value, label: `(${gmtOffsetLabel(z.value)}) ${z.name}` }));
+}
 
 // 12:00, 12:30, 1:00 ... 11:30 (the Zoom time picker uses 30 minute steps).
 const TIMES = Array.from({ length: 24 }, (_, i) => {
@@ -23,65 +42,137 @@ const TIMES = Array.from({ length: 24 }, (_, i) => {
   return `${hour}:${i % 2 === 0 ? "00" : "30"}`;
 });
 
-type Errors = Partial<Record<"topic" | "when" | "duration" | "passcode", string>>;
+type Meridiem = "AM" | "PM";
+type ErrorKey = "topic" | "when" | "duration" | "timezone" | "passcode" | "form";
+type Errors = Partial<Record<ErrorKey, string>>;
 
-function toIso(date: string, time: string, meridiem: "AM" | "PM", offset: string) {
+/** The next half-hour slot from now, in the browser time zone. */
+function nextSlot(): { date: string; time: string; meridiem: Meridiem } {
+  const d = new Date();
+  d.setSeconds(0, 0);
+  d.setMinutes(d.getMinutes() < 30 ? 30 : 60);
+  const h12 = d.getHours() % 12 === 0 ? 12 : d.getHours() % 12;
+  return {
+    date: dayKey(d),
+    time: `${h12}:${d.getMinutes() === 0 ? "00" : "30"}`,
+    meridiem: d.getHours() < 12 ? "AM" : "PM",
+  };
+}
+
+function to24h(time: string, meridiem: Meridiem): { hour: number; minute: number } {
   const [h, m] = time.split(":").map(Number);
-  const hour24 = (h % 12) + (meridiem === "PM" ? 12 : 0);
-  return new Date(`${date}T${String(hour24).padStart(2, "0")}:${String(m).padStart(2, "0")}:00${offset}`).toISOString();
+  return { hour: (h % 12) + (meridiem === "PM" ? 12 : 0), minute: m };
+}
+
+/** A random 6-character passcode, like Zoom makes for a new meeting. */
+function randomPasscode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(6));
+  return Array.from(bytes, (b) => chars[b % chars.length]).join("");
+}
+
+// Field names in the backend "validation_error" detail -> the form row that shows the message.
+const FIELD_TO_ROW: Record<string, ErrorKey> = {
+  title: "topic",
+  description: "topic",
+  scheduled_start: "when",
+  duration_min: "duration",
+  timezone: "timezone",
+  passcode: "passcode",
+};
+
+/** Puts a server error next to the field it is about. Other errors go to the top of the form. */
+function serverErrors(error: unknown): Errors {
+  if (!(error instanceof ApiError)) return { form: errorMessage(error) };
+  if (error.code === "start_in_past") return { when: error.message };
+  if (error.code !== "validation_error") return { form: error.message };
+  // The detail looks like "title: String should have at least 1 character; duration_min: ...".
+  const out: Errors = {};
+  for (const part of error.message.split("; ")) {
+    const [field, ...rest] = part.split(": ");
+    const row = FIELD_TO_ROW[field];
+    if (row && rest.length > 0) out[row] = rest.join(": ");
+    else out.form = out.form ? `${out.form} ${part}` : part;
+  }
+  return out;
 }
 
 /** The "Schedule Meeting" page of the Zoom web portal, with the access setting from the brief. */
 export function ScheduleForm() {
-  const [topic, setTopic] = useState(`${demoUser.name}'s Zoom Meeting`);
+  const user = useUser();
+  const [slot] = useState(nextSlot);
+  const [zones] = useState(() => zoneOptions(browserTimeZone()));
+
+  const [topic, setTopic] = useState(`${user.name}'s Zoom Meeting`);
   const [showDescription, setShowDescription] = useState(false);
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState("2026-09-30");
-  const [time, setTime] = useState("3:00");
-  const [meridiem, setMeridiem] = useState<"AM" | "PM">("PM");
+  const [date, setDate] = useState(slot.date);
+  const [time, setTime] = useState(slot.time);
+  const [meridiem, setMeridiem] = useState<Meridiem>(slot.meridiem);
   const [hours, setHours] = useState(1);
   const [minutes, setMinutes] = useState(0);
-  const [timezone, setTimezone] = useState<string>(TIMEZONES[0].value);
+  const [timezone, setTimezone] = useState(zones[0].value);
   const [usePasscode, setUsePasscode] = useState(true);
-  const [passcode, setPasscode] = useState("Zm7q2X");
-  const [waitingRoom, setWaitingRoom] = useState(false);
+  const [passcode, setPasscode] = useState(randomPasscode);
   const [access, setAccess] = useState<MeetingAccess>("allow_guests");
   const [errors, setErrors] = useState<Errors>({});
-  const [saved, setSaved] = useState<ScheduledMeeting | null>(null);
+  const [pending, setPending] = useState(false);
+  const [saved, setSaved] = useState<Meeting | null>(null);
+  const [editing, setEditing] = useState(false);
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const tz = TIMEZONES.find((t) => t.value === timezone) ?? TIMEZONES[0];
-    const start = date ? toIso(date, time, meridiem, tz.offset) : "";
+    const { hour, minute } = to24h(time, meridiem);
+    const start = date ? zonedTimeToUtc(date, hour, minute, timezone) : null;
     const next: Errors = {};
     if (!topic.trim()) next.topic = "Enter a topic.";
-    if (!start) next.when = "Pick a date.";
-    else if (new Date(start) <= new Date(MOCK_NOW)) next.when = "Pick a time in the future.";
+    if (!start || Number.isNaN(start.getTime())) next.when = "Pick a date.";
+    else if (start.getTime() <= Date.now()) next.when = "Pick a time in the future.";
     if (hours * 60 + minutes <= 0) next.duration = "The meeting must be at least 15 minutes.";
     if (usePasscode && !/^[A-Za-z0-9@*_-]{1,10}$/.test(passcode))
       next.passcode = "Use 1 to 10 letters, numbers or @ * _ -.";
     setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0 || !start) return;
 
-    // Mock of POST /api/meetings. It reuses a mock meeting code.
-    setSaved({
+    const input: ScheduleMeetingInput = {
       title: topic.trim(),
       description: description.trim() || null,
-      start,
-      duration: hours * 60 + minutes,
-      timezoneLabel: tz.label,
+      scheduled_start: start.toISOString(),
+      duration_min: hours * 60 + minutes,
+      timezone,
       access,
       passcode: usePasscode ? passcode : null,
-      waitingRoom,
-      code: upcomingMeetings[0].meeting_code,
-    });
-    window.scrollTo({ top: 0 });
+    };
+
+    setPending(true);
+    try {
+      const meeting =
+        editing && saved ? await api.updateMeeting(saved.id, input) : await api.scheduleMeeting(input);
+      void refreshMeetingLists();
+      setSaved(meeting);
+      setEditing(false);
+      window.scrollTo({ top: 0 });
+    } catch (caught) {
+      setErrors(serverErrors(caught));
+    } finally {
+      setPending(false);
+    }
   }
 
-  if (saved) return <ScheduledSummary meeting={saved} onEdit={() => setSaved(null)} />;
+  if (saved && !editing) {
+    const zoneLabel = zones.find((z) => z.value === saved.timezone)?.label ?? saved.timezone;
+    return <ScheduledSummary meeting={saved} timezoneLabel={zoneLabel} onEdit={() => setEditing(true)} />;
+  }
 
   return (
     <form onSubmit={onSubmit} noValidate className="max-w-form">
+      {errors.form ? (
+        <p role="alert" className="mt-4 flex items-center gap-1.5 rounded-md bg-danger-soft px-4 py-3 text-sm text-danger">
+          <Icon name="alert" size={16} />
+          {errors.form}
+        </p>
+      ) : null}
+
       <FormRow label="Topic" htmlFor="topic" error={errors.topic} errorId="topic-msg">
         <TextInput
           id="topic"
@@ -118,18 +209,13 @@ export function ScheduleForm() {
               id="date"
               type="date"
               value={date}
-              min="2026-09-30"
+              min={slot.date}
               onChange={(e) => setDate(e.target.value)}
               aria-invalid={errors.when ? true : undefined}
               aria-describedby={errors.when ? "when-msg" : undefined}
             />
           </div>
-          <Select
-            aria-label="Start time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="w-28"
-          >
+          <Select aria-label="Start time" value={time} onChange={(e) => setTime(e.target.value)} className="w-28">
             {TIMES.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -139,7 +225,7 @@ export function ScheduleForm() {
           <Select
             aria-label="AM or PM"
             value={meridiem}
-            onChange={(e) => setMeridiem(e.target.value as "AM" | "PM")}
+            onChange={(e) => setMeridiem(e.target.value as Meridiem)}
             className="w-24"
           >
             <option value="AM">AM</option>
@@ -180,11 +266,11 @@ export function ScheduleForm() {
         </div>
       </FormRow>
 
-      <FormRow label="Time Zone" htmlFor="timezone">
+      <FormRow label="Time Zone" htmlFor="timezone" error={errors.timezone} errorId="timezone-msg">
         <Select id="timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)} className="sm:max-w-sm">
-          {TIMEZONES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
+          {zones.map((z) => (
+            <option key={z.value} value={z.value}>
+              {z.label}
             </option>
           ))}
         </Select>
@@ -216,9 +302,8 @@ export function ScheduleForm() {
         <Check
           id="waiting-room"
           label="Waiting Room"
-          description="Only users admitted by the host can join the meeting."
-          checked={waitingRoom}
-          onChange={(e) => setWaitingRoom(e.target.checked)}
+          description="Only users admitted by the host can join the meeting. Not available yet."
+          disabled
         />
       </FormRow>
 
@@ -247,13 +332,24 @@ export function ScheduleForm() {
       </FormRow>
 
       <div className="flex gap-3 pt-6 sm:pl-46">
-        <Button type="submit">Save</Button>
-        <ButtonLink href="/" variant="secondary">
-          Cancel
-        </ButtonLink>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving..." : "Save"}
+        </Button>
+        {editing ? (
+          <Button variant="secondary" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+        ) : (
+          <ButtonLink href="/" variant="secondary">
+            Cancel
+          </ButtonLink>
+        )}
       </div>
       <p className="mt-6 text-xs text-ink-muted sm:pl-46">
-        Times show in the selected time zone. <Link href="/" className="rounded-sm text-primary hover:underline">Back to Home</Link>
+        Times show in the selected time zone.{" "}
+        <Link href="/" className="rounded-sm text-primary hover:underline">
+          Back to Home
+        </Link>
       </p>
     </form>
   );

@@ -4,6 +4,16 @@ import { useEffect, useState } from "react";
 
 type CameraState = { stream: MediaStream | null; error: string | null };
 
+/** Short text for a getUserMedia failure. The names come from the Media Capture spec. */
+function cameraErrorText(error: unknown): string {
+  const name = error instanceof DOMException ? error.name : "";
+  if (name === "NotAllowedError" || name === "SecurityError")
+    return "Camera permission is blocked. Allow the camera in the browser settings.";
+  if (name === "NotFoundError" || name === "OverconstrainedError") return "No camera was found.";
+  if (name === "NotReadableError") return "Another app is using the camera.";
+  return "The camera is not available.";
+}
+
 /**
  * Opens the local camera while `enabled` is true (getUserMedia).
  * No media leaves the browser. When the camera is blocked or missing,
@@ -32,8 +42,8 @@ export function useLocalCamera(enabled: boolean): CameraState {
         opened = stream;
         setState({ stream, error: null });
       })
-      .catch(() => {
-        if (!cancelled) setState({ stream: null, error: "Camera is blocked or missing." });
+      .catch((error: unknown) => {
+        if (!cancelled) setState({ stream: null, error: cameraErrorText(error) });
       });
 
     return () => {

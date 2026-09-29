@@ -35,7 +35,7 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
           return (
             <span
               key={item.label}
-              title="Not part of this mockup"
+              title="Not available yet"
               className={cn(rowClass, "cursor-default text-ink-muted")}
             >
               <Icon name={item.icon} size={18} />

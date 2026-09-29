@@ -9,8 +9,8 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Zoom clone (Design A)",
-  description: "Static mockup of the Zoom web client. Mock data only.",
+  title: "Zoom clone",
+  description: "Video meetings in the browser: instant and scheduled meetings, join by ID or link.",
 };
 
 export const viewport: Viewport = {

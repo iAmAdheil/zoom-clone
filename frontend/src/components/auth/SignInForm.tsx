@@ -2,23 +2,58 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { mutate } from "swr";
 import { Button } from "@/components/ui/Button";
 import { Check, Field, TextInput } from "@/components/ui/Field";
 import { GoogleMark, Icon } from "@/components/ui/Icon";
+import { ApiError, api, errorMessage } from "@/lib/api";
+import { keys } from "@/lib/queries";
 
 type Pending = "google" | "demo" | null;
 
-/** Sign in card: email step (inactive in the mockup), Google, and the demo user button. */
-export function SignInForm() {
+/** Sign in card: email step (not available), Google, and the demo user button. */
+export function SignInForm({ next }: { next: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | undefined>();
   const [pending, setPending] = useState<Pending>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  function goHome(kind: Exclude<Pending, null>) {
-    setPending(kind);
-    // Mock of GET /api/auth/google/login or POST /api/auth/demo.
-    setTimeout(() => router.push("/"), 400);
+  async function continueWithGoogle() {
+    setPending("google");
+    setError(null);
+    const url = api.googleLoginUrl(next);
+    // Check first that Google sign-in is set up. A working route answers with a redirect
+    // (opaque here), a missing setup answers 503 with a JSON error.
+    try {
+      const check = await fetch(url, { redirect: "manual", credentials: "include" });
+      if (check.type !== "opaqueredirect" && !check.ok) {
+        const body = await check.json().catch(() => null);
+        setError(body?.detail ?? "Google sign-in is not available now.");
+        setPending(null);
+        return;
+      }
+    } catch {
+      // The check failed (for example, offline). Let the browser try the real redirect.
+    }
+    window.location.assign(url);
+  }
+
+  async function continueAsDemo() {
+    setPending("demo");
+    setError(null);
+    try {
+      const user = await api.demoLogin();
+      await mutate(keys.me, user, { revalidate: false });
+      router.replace(next);
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError && caught.code === "demo_disabled"
+          ? "The demo user is turned off on this server."
+          : errorMessage(caught),
+      );
+      setPending(null);
+    }
   }
 
   function onEmailSubmit(e: FormEvent) {
@@ -62,14 +97,15 @@ export function SignInForm() {
         <span className="h-px flex-1 bg-line" />
       </div>
 
+      {error ? (
+        <p role="alert" className="mb-4 flex items-center gap-1.5 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">
+          <Icon name="alert" size={16} />
+          {error}
+        </p>
+      ) : null}
+
       <div className="flex flex-col gap-3">
-        <Button
-          variant="secondary"
-          size="lg"
-          block
-          disabled={pending !== null}
-          onClick={() => goHome("google")}
-        >
+        <Button variant="secondary" size="lg" block disabled={pending !== null} onClick={continueWithGoogle}>
           <GoogleMark />
           {pending === "google" ? "Redirecting to Google..." : "Continue with Google"}
         </Button>
@@ -78,7 +114,7 @@ export function SignInForm() {
           size="lg"
           block
           disabled={pending !== null}
-          onClick={() => goHome("demo")}
+          onClick={continueAsDemo}
           className="border border-dashed border-line-strong"
         >
           <Icon name="user" size={18} />
@@ -89,7 +125,7 @@ export function SignInForm() {
       <p className="mt-8 text-center text-xs leading-5 text-ink-muted">
         By signing in, I agree to the Privacy Statement and Terms of Service.
         <br />
-        The demo user sees mock meetings only.
+        The demo user needs no Google account.
       </p>
     </div>
   );

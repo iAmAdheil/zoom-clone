@@ -1,29 +1,48 @@
+"use client";
+
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { errorMessage } from "@/lib/api";
 import { formatMeetingCode, formatShortDate, formatTime, minutesBetween } from "@/lib/format";
 import type { Meeting, User } from "@/lib/types";
+import { ListMessage } from "./ListMessage";
+import { AccessBadge, CopyInviteButton } from "./MeetingRowBits";
 
-type RecentMeetingsProps = { meetings: Meeting[]; me: User };
+type RecentMeetingsProps = {
+  meetings: Meeting[] | undefined;
+  error: unknown;
+  onRetry: () => void;
+  me: User;
+  onCopied: (message: string) => void;
+};
 
 /** Recent meetings, in the table style of the portal "Previous" meetings tab. */
-export function RecentMeetings({ meetings, me }: RecentMeetingsProps) {
+export function RecentMeetings({ meetings, error, onRetry, me, onCopied }: RecentMeetingsProps) {
   return (
     <section aria-labelledby="recent-title">
       <div className="flex items-end justify-between border-b border-line pb-2">
         <h2 id="recent-title" className="text-lg font-bold text-ink">
           Recent
         </h2>
-        <span className="text-xs text-ink-muted">Last 7 days</span>
+        {meetings && meetings.length > 0 ? (
+          <span className="text-xs text-ink-muted">Last {meetings.length} meetings</span>
+        ) : null}
       </div>
 
-      {meetings.length === 0 ? (
-        <p className="py-10 text-center text-sm text-ink-muted">
+      {error ? (
+        <ListMessage tone="error" onRetry={onRetry} className="py-10 justify-center">
+          {errorMessage(error)}
+        </ListMessage>
+      ) : !meetings ? (
+        <ListMessage className="py-10 text-center">Loading meetings...</ListMessage>
+      ) : meetings.length === 0 ? (
+        <ListMessage className="py-10 text-center">
           You have no recent meetings. Start one with New Meeting.
-        </p>
+        </ListMessage>
       ) : (
         <ul className="divide-y divide-line">
           {meetings.map((m) => {
-            const start = m.started_at ?? m.scheduled_start ?? "";
+            const start = m.started_at ?? m.scheduled_start;
             const length = m.started_at && m.ended_at ? minutesBetween(m.started_at, m.ended_at) : null;
             const hostLabel = m.host.id === me.id ? "You hosted" : `Host: ${m.host.name}`;
             return (
@@ -32,12 +51,16 @@ export function RecentMeetings({ meetings, me }: RecentMeetingsProps) {
                 className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 px-1 py-3 transition-colors hover:bg-surface-muted sm:grid-cols-[140px_1fr_auto] sm:px-3"
               >
                 <div className="col-span-2 text-xs text-ink-muted sm:col-span-1 sm:text-sm">
-                  <span className="font-bold text-ink-2">{formatShortDate(start)}</span>
-                  <span className="ml-2 sm:ml-0 sm:block">{formatTime(start)}</span>
+                  {start ? (
+                    <>
+                      <span className="font-bold text-ink-2">{formatShortDate(start)}</span>
+                      <span className="ml-2 sm:ml-0 sm:block">{formatTime(start)}</span>
+                    </>
+                  ) : null}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-ink">{m.title}</p>
-                  <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-ink-muted">
+                  <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
                     <span>ID: {formatMeetingCode(m.meeting_code)}</span>
                     {length !== null ? (
                       <span className="inline-flex items-center gap-1">
@@ -45,11 +68,19 @@ export function RecentMeetings({ meetings, me }: RecentMeetingsProps) {
                       </span>
                     ) : null}
                     <span>{hostLabel}</span>
+                    <AccessBadge access={m.access} />
                   </p>
                 </div>
-                <ButtonLink href={`/meeting/${m.meeting_code}`} variant="secondary" size="sm">
-                  Start again
-                </ButtonLink>
+                <div className="flex items-center gap-1">
+                  <CopyInviteButton meeting={m} onCopied={onCopied} />
+                  {m.status === "live" ? (
+                    <ButtonLink href={`/meeting/${m.meeting_code}`} variant="secondary" size="sm">
+                      Join
+                    </ButtonLink>
+                  ) : (
+                    <span className="w-14 text-center text-xs text-ink-muted">Ended</span>
+                  )}
+                </div>
               </li>
             );
           })}

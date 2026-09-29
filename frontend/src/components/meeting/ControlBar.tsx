@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { MenuItem, Popover } from "@/components/ui/Popover";
-import { REACTIONS } from "@/lib/mock";
 import { CaretButton, ControlButton } from "./ControlButton";
+
+const REACTIONS = ["👏", "👍", "❤️", "😂", "😮", "🎉"] as const;
 
 export type Panel = "participants" | "chat" | null;
 
@@ -149,7 +150,7 @@ export function ControlBar(props: ControlBarProps) {
             </MenuItem>
           </div>
           <MenuItem tone="dark" onSelect={close}>
-            <Icon name="record" size={16} /> Record (not in mockup)
+            <Icon name="record" size={16} /> Record (not available yet)
           </MenuItem>
           <MenuItem tone="dark" onSelect={close}>
             <Icon name="settings" size={16} /> Settings

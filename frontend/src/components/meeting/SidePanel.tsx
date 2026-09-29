@@ -22,7 +22,7 @@ export function SidePanel({ title, onClose, children, footer }: SidePanelProps) 
         <h2 className="truncate text-sm font-bold">{title}</h2>
         <div className="absolute right-2 flex items-center gap-0.5">
           <span
-            title="Pop out (not in mockup)"
+            title="Pop out (not available yet)"
             className="hidden rounded-md p-1.5 text-ink-subtle lg:inline-flex"
           >
             <Icon name="popOut" size={16} />

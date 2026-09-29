@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { Field, TextInput } from "@/components/ui/Field";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
+import { Toast } from "@/components/ui/Toast";
 import { cn } from "@/lib/cn";
-import { instantMeeting } from "@/lib/mock";
+import { useToast } from "@/lib/hooks";
+import { useStartInstantMeeting } from "@/lib/useStartMeeting";
 
 const tileClass =
   "flex size-tile-btn items-center justify-center rounded-tile text-white shadow-tile transition-[background-color,transform] group-hover:-translate-y-0.5 group-active:translate-y-0";
@@ -43,13 +45,26 @@ function TileLink({ href, children }: { href: string; children: ReactNode }) {
 export function ActionTiles() {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareKey, setShareKey] = useState("");
+  const newMeeting = useStartInstantMeeting();
+  const toast = useToast(4000);
+
+  async function startNewMeeting() {
+    const error = await newMeeting.start();
+    if (error) toast.show(error);
+  }
 
   return (
     <>
       <div className="grid grid-cols-2 justify-items-center gap-x-6 gap-y-7 sm:gap-x-10">
-        <TileLink href={`/meeting/${instantMeeting.meeting_code}`}>
-          <TileFace icon="video" tone="accent" label="New Meeting" />
-        </TileLink>
+        <button
+          type="button"
+          className={cn(wrapClass, "disabled:cursor-wait disabled:opacity-70")}
+          onClick={startNewMeeting}
+          disabled={newMeeting.pending}
+          aria-busy={newMeeting.pending}
+        >
+          <TileFace icon="video" tone="accent" label={newMeeting.pending ? "Starting..." : "New Meeting"} />
+        </button>
         <TileLink href="/join">
           <TileFace icon="plus" tone="primary" label="Join" />
         </TileLink>
@@ -76,7 +91,7 @@ export function ActionTiles() {
           </>
         }
       >
-        <Field id="share-key" label="Sharing key or meeting ID" hint="Screen sharing is not part of this mockup.">
+        <Field id="share-key" label="Sharing key or meeting ID" hint="Screen sharing is not available yet.">
           <TextInput
             id="share-key"
             value={shareKey}
@@ -86,6 +101,7 @@ export function ActionTiles() {
           />
         </Field>
       </Modal>
+      <Toast message={toast.message} tone="error" />
     </>
   );
 }

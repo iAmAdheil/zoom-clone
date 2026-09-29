@@ -68,6 +68,24 @@ export function useToast(ms = 2500) {
   return { message, show };
 }
 
+function subscribeToClock(onTick: () => void) {
+  const id = setInterval(onTick, 1000);
+  return () => clearInterval(id);
+}
+
+/**
+ * The current time, rounded down to the minute, in ms.
+ * It is null during the server render, because the server does not know the browser time zone.
+ * The component renders again only when the minute changes.
+ */
+export function useNowMinute(): number | null {
+  return useSyncExternalStore(
+    subscribeToClock,
+    () => Math.floor(Date.now() / 60_000) * 60_000,
+    () => null,
+  );
+}
+
 /** Copies text. Returns false when the browser blocks the clipboard. */
 export async function copyText(text: string): Promise<boolean> {
   try {

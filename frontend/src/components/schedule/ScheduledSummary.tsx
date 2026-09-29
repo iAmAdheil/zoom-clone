@@ -1,45 +1,46 @@
 "use client";
 
+import { AccessBadge } from "@/components/dashboard/MeetingRowBits";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Toast } from "@/components/ui/Toast";
 import { formatDay, formatMeetingCode, formatTimeRange } from "@/lib/format";
 import { copyText, useToast } from "@/lib/hooks";
-import type { MeetingAccess } from "@/lib/types";
+import type { Meeting } from "@/lib/types";
 
-export type ScheduledMeeting = {
-  title: string;
-  description: string | null;
-  start: string;
-  duration: number;
-  timezoneLabel: string;
-  access: MeetingAccess;
-  passcode: string | null;
-  waitingRoom: boolean;
-  code: string;
-};
+type ScheduledSummaryProps = { meeting: Meeting; timezoneLabel: string; onEdit: () => void };
 
 /** Meeting details page shown after Save, like the Zoom portal does. */
-export function ScheduledSummary({ meeting, onEdit }: { meeting: ScheduledMeeting; onEdit: () => void }) {
+export function ScheduledSummary({ meeting, timezoneLabel, onEdit }: ScheduledSummaryProps) {
   const toast = useToast();
-  const link = `https://zoomclone.dev/j/${meeting.code}${meeting.passcode ? `?pwd=${meeting.passcode}` : ""}`;
+  const start = meeting.scheduled_start;
+  const code = formatMeetingCode(meeting.meeting_code);
 
+  // Times show in the meeting time zone, next to its label.
   const rows: Array<[string, string]> = [
     ["Topic", meeting.title],
     ["Description", meeting.description ?? "None"],
-    ["Time", `${formatDay(meeting.start)}, ${formatTimeRange(meeting.start, meeting.duration)} ${meeting.timezoneLabel}`],
-    ["Meeting ID", formatMeetingCode(meeting.code)],
     [
-      "Security",
-      [meeting.passcode ? `Passcode ${meeting.passcode}` : "No passcode", meeting.waitingRoom ? "Waiting Room" : null]
-        .filter(Boolean)
-        .join(", "),
+      "Time",
+      start
+        ? `${formatDay(start, meeting.timezone)}, ${formatTimeRange(start, meeting.duration_min ?? 0, meeting.timezone)} ${timezoneLabel}`
+        : "Not set",
     ],
-    ["Meeting access", meeting.access === "allow_guests" ? "Guests allowed" : "Verified users only"],
+    ["Meeting ID", code],
+    ["Security", meeting.passcode ? `Passcode ${meeting.passcode}` : "No passcode"],
   ];
 
   async function copyInvite() {
-    const ok = await copyText(`${meeting.title}\n${link}\nMeeting ID: ${formatMeetingCode(meeting.code)}`);
+    const text = [
+      `${meeting.host.name} is inviting you to a Zoom meeting.`,
+      `Topic: ${meeting.title}`,
+      `Join: ${meeting.invite_link}`,
+      `Meeting ID: ${code}`,
+      meeting.passcode ? `Passcode: ${meeting.passcode}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const ok = await copyText(text);
     toast.show(ok ? "Invitation copied" : "Copy blocked by the browser");
   }
 
@@ -58,9 +59,15 @@ export function ScheduledSummary({ meeting, onEdit }: { meeting: ScheduledMeetin
           </div>
         ))}
         <div className="grid gap-1 py-4 sm:grid-cols-[160px_1fr] sm:gap-6">
+          <dt className="text-sm font-bold text-ink-2">Meeting access</dt>
+          <dd className="text-sm">
+            <AccessBadge access={meeting.access} />
+          </dd>
+        </div>
+        <div className="grid gap-1 py-4 sm:grid-cols-[160px_1fr] sm:gap-6">
           <dt className="text-sm font-bold text-ink-2">Invite Link</dt>
           <dd className="flex flex-wrap items-center gap-3 text-sm">
-            <span className="break-all text-primary">{link}</span>
+            <span className="break-all text-primary">{meeting.invite_link}</span>
             <Button variant="link" onClick={copyInvite}>
               <Icon name="copy" size={16} /> Copy Invitation
             </Button>
@@ -69,7 +76,7 @@ export function ScheduledSummary({ meeting, onEdit }: { meeting: ScheduledMeetin
       </dl>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <ButtonLink href={`/meeting/${meeting.code}`}>Start this Meeting</ButtonLink>
+        <ButtonLink href={`/meeting/${meeting.meeting_code}`}>Start this Meeting</ButtonLink>
         <Button variant="secondary" onClick={onEdit}>
           Edit
         </Button>

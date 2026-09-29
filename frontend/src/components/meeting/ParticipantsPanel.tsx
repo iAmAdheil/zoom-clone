@@ -107,7 +107,7 @@ export function ParticipantsPanel(props: ParticipantsPanelProps) {
               Allow participants to unmute themselves
             </MenuItem>
             <MenuItem onSelect={() => setMoreOpen(false)}>
-              <span className="w-4" /> Lock meeting (not in mockup)
+              <span className="w-4" /> Lock meeting (not available yet)
             </MenuItem>
           </Popover>
         </div>
