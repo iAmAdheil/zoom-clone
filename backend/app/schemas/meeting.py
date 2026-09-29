@@ -106,6 +106,8 @@ class MeetingPatch(BaseModel):
 class JoinIn(BaseModel):
     display_name: str = Field(min_length=1, max_length=255)
     passcode: str | None = Field(default=None, max_length=32)
+    # From an earlier join response. It gives back the same participant row after a drop.
+    rejoin_token: str | None = Field(default=None, max_length=1024)
 
     @field_validator("display_name")
     @classmethod
@@ -119,4 +121,5 @@ class JoinIn(BaseModel):
 class JoinOut(BaseModel):
     participant: ParticipantOut
     ws_ticket: str
+    rejoin_token: str
     meeting: MeetingOut

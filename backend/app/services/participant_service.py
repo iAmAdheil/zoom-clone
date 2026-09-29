@@ -6,7 +6,7 @@ from app.core.security import verify_ws_ticket
 from app.models import Meeting, MeetingStatus, Participant, ParticipantRole, User
 from app.schemas.participant import ParticipantOut
 from app.services.meeting_service import now
-from app.services.room_manager import room_manager
+from app.services.room_manager import CLOSE_REMOVED, room_manager
 
 
 def _active(meeting: Meeting):
@@ -71,7 +71,7 @@ def list_participants(db: Session, meeting: Meeting) -> list[Participant]:
     )
 
 
-def _updated_event(participant: Participant) -> dict:
+def updated_event(participant: Participant) -> dict:
     return {
         "type": "participant_updated",
         "participant": ParticipantOut.model_validate(participant).model_dump(mode="json"),
@@ -85,7 +85,7 @@ def mute_participant(db: Session, meeting: Meeting, user: User, participant_id: 
     participant.is_muted = True
     db.commit()
     db.refresh(participant)
-    room_manager.broadcast(meeting.meeting_code, _updated_event(participant))
+    room_manager.broadcast(meeting.meeting_code, updated_event(participant))
     return participant
 
 
@@ -103,7 +103,9 @@ def mute_all(db: Session, meeting: Meeting, user: User) -> list[Participant]:
     for participant in muted:
         participant.is_muted = True
     db.commit()
-    room_manager.broadcast(meeting.meeting_code, {"type": "mute_all"})
+    room_manager.broadcast(
+        meeting.meeting_code, {"type": "mute_all", "participant_ids": [p.id for p in muted]}
+    )
     return muted
 
 
@@ -119,8 +121,14 @@ def remove_participant(
     participant.left_at = participant.left_at or now()
     db.commit()
     db.refresh(participant)
-    room_manager.broadcast(
-        meeting.meeting_code, {"type": "you_were_removed", "participant_id": participant.id}
+    # Only the removed participant gets `you_were_removed`. Then the server closes its sockets.
+    room_manager.send_to_participant(
+        meeting.meeting_code,
+        participant.id,
+        {"type": "you_were_removed", "participant_id": participant.id},
+    )
+    room_manager.close_participant(
+        meeting.meeting_code, participant.id, CLOSE_REMOVED, "removed_from_meeting"
     )
     room_manager.broadcast(
         meeting.meeting_code, {"type": "participant_left", "participant_id": participant.id}

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     session_days: int = 7
     ws_ticket_seconds: int = 60
+    rejoin_token_hours: int = 12
 
     @property
     def google_configured(self) -> bool:

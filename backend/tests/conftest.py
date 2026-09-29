@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from contextlib import nullcontext
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -7,7 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.config import get_settings
-from app.core.db import Base, get_db, make_engine
+from app.core.db import Base, get_db, get_session_factory, make_engine
 from app.main import app
 from app.models import User
 
@@ -37,6 +38,8 @@ def _client(db_session: Session) -> TestClient:
         yield db_session
 
     app.dependency_overrides[get_db] = override
+    # The WebSocket opens a short session per step. In tests, every step uses the test session.
+    app.dependency_overrides[get_session_factory] = lambda: lambda: nullcontext(db_session)
     return TestClient(app)
 
 
