@@ -1,0 +1,178 @@
+/*
+ * Design C tokens. This file is the single source of truth.
+ *
+ * Tailwind v4 reads its config from the @theme block below, so this file
+ * is also the Tailwind config. The default Tailwind palette, radii and
+ * font stacks are cleared, so a class like `bg-blue-500` does not exist.
+ * Components can only use the tokens named here.
+ */
+
+@theme {
+  /* Clear Tailwind defaults so only our tokens exist. */
+  --color-*: initial;
+  --radius-*: initial;
+  --font-*: initial;
+  --shadow-*: initial;
+
+  /* ---------- Brand ---------- */
+  --color-brand: #0b5cff; /* Zoom blue */
+  --color-brand-hover: #0a4fdb;
+  --color-brand-press: #0842b8;
+  --color-brand-soft: #e8f0ff; /* selected rows, soft buttons */
+  --color-brand-soft-hover: #d6e4ff;
+  --color-accent: #ff742e; /* Zoom orange: "New meeting" only */
+  --color-accent-hover: #f0621a;
+
+  /* ---------- Status ---------- */
+  --color-danger: #e02828;
+  --color-danger-hover: #c41f1f;
+  --color-danger-soft: #fdecec;
+  --color-success: #12b76a;
+  --color-success-soft: #e7f8ef;
+  --color-success-ink: #067647; /* success text on light surfaces */
+  --color-warning: #f79009;
+  --color-warning-soft: #fff4e5;
+  --color-warning-ink: #b54708; /* warning text on light surfaces */
+  --color-speaking: #2dd36f; /* active speaker ring in the room */
+
+  /* ---------- Light surfaces (dashboard, forms) ---------- */
+  --color-canvas: #f5f7fa;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f2f4f7;
+  --color-surface-sunken: #eef1f5;
+  --color-line: #e3e7ed;
+  --color-line-strong: #c9d0d9;
+  --color-ink: #131619;
+  --color-ink-2: #3d444d;
+  --color-ink-muted: #6b7480;
+  --color-ink-faint: #9aa3ae;
+  --color-on-brand: #ffffff;
+
+  /* ---------- Dark surfaces (meeting room, pre-join) ---------- */
+  --color-room: #121212;
+  --color-room-bar: #1c1c1c;
+  --color-room-tile: #262626;
+  --color-room-tile-2: #303030;
+  --color-room-panel: #1f1f1f;
+  --color-room-raised: #2e2e2e;
+  --color-room-hover: #3a3a3a;
+  --color-room-line: #3b3b3b;
+  --color-room-ink: #ffffff;
+  --color-room-ink-muted: #b3b3b3;
+  --color-room-ink-faint: #7a7a7a;
+
+  /* Avatar fills. Used by the Avatar component only. */
+  --color-avatar-1: #0b5cff;
+  --color-avatar-2: #7a5af8;
+  --color-avatar-3: #0e9384;
+  --color-avatar-4: #dd2590;
+  --color-avatar-5: #e8590c;
+  --color-avatar-6: #3e6b8a;
+
+  /* Fake camera feeds. Used by the CameraFeed component only. */
+  --color-scene-1: #4a5a6c;
+  --color-scene-1b: #1e2833;
+  --color-scene-2: #6b5443;
+  --color-scene-2b: #2a1f18;
+  --color-scene-3: #3f615a;
+  --color-scene-3b: #15241f;
+  --color-scene-4: #5b4d70;
+  --color-scene-4b: #211b2c;
+  --color-skin-1: #e3b08f;
+  --color-skin-2: #9a6444;
+  --color-skin-3: #f2cdb0;
+  --color-hair-1: #2b1d15;
+  --color-hair-2: #5a3a22;
+
+  /* Focus ring */
+  --color-focus: #0b5cff;
+  --color-focus-dark: #7aa7ff;
+
+  --color-transparent: transparent;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-scrim: rgb(0 0 0 / 0.55);
+
+  /* ---------- Radii ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px; /* inputs, buttons */
+  --radius-lg: 14px; /* cards, tiles in the room */
+  --radius-xl: 20px; /* dashboard action tiles */
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* ---------- Type ---------- */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --text-2xs: 0.625rem; /* 10px: avatar initials, tiny counters */
+  --text-2xs--line-height: 1;
+  --tracking-logo: -0.04em;
+
+  /* ---------- Shadows ---------- */
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08);
+  --shadow-pop: 0 12px 32px rgb(16 24 40 / 0.16), 0 2px 6px rgb(16 24 40 / 0.08);
+  --shadow-pop-dark: 0 12px 32px rgb(0 0 0 / 0.5);
+  --shadow-tile: 0 8px 20px rgb(11 92 255 / 0.28);
+  --shadow-tile-accent: 0 8px 20px rgb(255 116 46 / 0.32);
+
+  /* ---------- Spacing ---------- */
+  /* Tailwind multiplies this base: p-4 = 4 x 0.25rem = 16px. */
+  --spacing: 0.25rem;
+
+  /* Layout sizes, used as w-sidenav, h-topnav, etc. */
+  --spacing-topnav: 60px;
+  --spacing-sidenav: 232px;
+  --spacing-rail: 76px;
+  --spacing-tabbar: 64px;
+  --spacing-roombar: 76px;
+  --spacing-roomtop: 48px;
+  --spacing-panel: 340px;
+  --spacing-content: 1120px;
+  --spacing-form: 760px;
+  --spacing-label: 168px; /* label column in row forms */
+
+  /* ---------- Breakpoints ---------- */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-pop-in: pop-in 140ms var(--ease-out);
+  --animate-float-up: float-up 2600ms var(--ease-out) forwards;
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes float-up {
+    0% {
+      opacity: 0;
+      transform: translateY(8px) scale(0.8);
+    }
+    12% {
+      opacity: 1;
+      transform: translateY(0) scale(1.1);
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-40px) scale(1);
+    }
+  }
+}

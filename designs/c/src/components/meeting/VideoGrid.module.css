@@ -1,0 +1,44 @@
+/*
+ * Gallery math. The stage is a size container. The grid picks the
+ * largest tile size that fits both the width and the height.
+ * Landscape stages use 16:9 tiles. Portrait stages (phones) use 3:4.
+ */
+
+.stage {
+  container-type: size;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  min-width: 0;
+}
+
+.grid {
+  --gap: calc(var(--spacing, 0.25rem) * 2);
+  --cols: var(--cols-l);
+  --rows: var(--rows-l);
+  --ratio: 1.7778;
+
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  width: min(
+    100cqw,
+    calc(
+      (100cqh - (var(--rows) - 1) * var(--gap)) / var(--rows) * var(--ratio) * var(--cols) +
+        (var(--cols) - 1) * var(--gap)
+    )
+  );
+}
+
+.tile {
+  aspect-ratio: var(--ratio);
+  min-width: 0;
+}
+
+@container (orientation: portrait) {
+  .grid {
+    --cols: var(--cols-p);
+    --rows: var(--rows-p);
+    --ratio: 0.75;
+  }
+}
