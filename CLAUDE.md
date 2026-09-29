@@ -13,3 +13,10 @@ Source brief: `ASSIGNMENT.pdf`. Stack: Next.js (frontend), FastAPI (backend), SQ
 - Write commit messages and PR text in simple, short sentences. Do not add AI attribution lines.
 - Keep code modular. The author must be able to explain every line.
 - Run the tests and the linter before you open the PR. State the result in the PR.
+
+## Task routing (model and effort)
+- Allowed models: Sonnet 5.5 and Opus 5.5 only. Do not use any other model.
+- Lowest allowed effort: medium. Never use low.
+- Simple, well-scoped task: agent type `worker-simple` (Sonnet 5.5, high effort).
+- Complex task, or any design task: agent type `worker-complex` (Opus 5.5, high effort).
+- The lead may raise the effort for a hard task. The lead may not go below medium.
