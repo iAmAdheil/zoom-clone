@@ -1,0 +1,258 @@
+{
+  "rows": [
+    {
+      "name": "api: unauthenticated calls to user/host endpoints get 401 (GET participants 403)",
+      "pass": true,
+      "evidence": {
+        "POST /api/meetings/instant": 401,
+        "POST /api/meetings": 401,
+        "GET /api/meetings/upcoming": 401,
+        "GET /api/meetings/recent": 401,
+        "PATCH /api/meetings/19": 401,
+        "DELETE /api/meetings/19": 401,
+        "POST /api/meetings/4398418723/end": 401,
+        "POST /api/meetings/4398418723/mute-all": 401,
+        "POST /api/meetings/4398418723/participants/47/mute": 401,
+        "POST /api/meetings/4398418723/participants/47/remove": 401,
+        "GET /api/meetings/4398418723/participants": 403
+      }
+    },
+    {
+      "name": "api: other user's meeting: edit, cancel, end, mute-all, remove all 403",
+      "pass": true,
+      "evidence": {
+        "bobPatch": "403 not_host",
+        "bobDelete": "403 not_host",
+        "aliceEndDemo": "403 not_host",
+        "alicePatchDemo": "403 not_host",
+        "aliceMuteAll": "403 not_allowed",
+        "aliceRemove": "403 not_allowed"
+      }
+    },
+    {
+      "name": "api: Alice's meeting unchanged after Bob's attempts",
+      "pass": true,
+      "evidence": {
+        "title": "QA Alice private"
+      }
+    },
+    {
+      "name": "api: GET /api/meetings/{code} has only public fields (no passcode, description, email, invite_link)",
+      "pass": true,
+      "evidence": {
+        "keys": [
+          "access",
+          "host_name",
+          "meeting_code",
+          "requires_passcode",
+          "status",
+          "title"
+        ],
+        "leaks": []
+      }
+    },
+    {
+      "name": "api: lookup accepts a code with spaces",
+      "pass": true,
+      "evidence": {
+        "status": 200
+      }
+    },
+    {
+      "name": "api: join response to an anonymous guest does not expose the host email",
+      "pass": false,
+      "evidence": {
+        "hostFields": [
+          "id",
+          "email",
+          "name",
+          "avatar_url",
+          "is_demo"
+        ],
+        "hostEmail": "alice@example.com"
+      }
+    },
+    {
+      "name": "api: guest can join a scheduled meeting before the host starts it (info)",
+      "pass": null,
+      "evidence": {
+        "status": 200,
+        "meetingStatus": "scheduled"
+      }
+    },
+    {
+      "name": "api: Bob's upcoming does not contain Alice's meeting",
+      "pass": true,
+      "evidence": {}
+    },
+    {
+      "name": "api: SQL injection strings are stored as text or refused, no 500, tables intact",
+      "pass": true,
+      "evidence": {
+        "lookup ' OR '1'='1": 404,
+        "join name ' OR '1'='1": "200 name=true",
+        "schedule title ' OR '1'='1": "200 stored=true",
+        "recent limit ' OR '1'='1": 422,
+        "lookup 1; DROP TABLE meetings;--": 404,
+        "join name 1; DROP TABLE meetings;--": "200 name=true",
+        "schedule title 1; DROP TABLE meetings;--": "200 stored=true",
+        "recent limit 1; DROP TABLE meetings;--": 422,
+        "lookup \" OR 1=1 --": 404,
+        "join name \" OR 1=1 --": "200 name=true",
+        "schedule title \" OR 1=1 --": "200 stored=true",
+        "recent limit \" OR 1=1 --": 422,
+        "lookup ' UNION SELECT email FROM users--": 404,
+        "join name ' UNION SELECT email FROM users--": "422 name=false",
+        "schedule title ' UNION SELECT email FROM users--": "200 stored=true",
+        "recent limit ' UNION SELECT email FROM users--": 422
+      }
+    },
+    {
+      "name": "api: 5 MB JSON body is refused (413 or 422) quickly",
+      "pass": true,
+      "evidence": {
+        "status": 422,
+        "code": "validation_error",
+        "ms": 15
+      }
+    },
+    {
+      "name": "api: 50 MB join body is rejected before parsing (413); no body size limit is set",
+      "pass": false,
+      "evidence": {
+        "status": 422,
+        "ms": 360
+      }
+    },
+    {
+      "name": "api: wrong types give 422 validation_error (no 500)",
+      "pass": true,
+      "evidence": {
+        "durationString": "422 validation_error",
+        "startGarbage": "422 validation_error",
+        "badTz": "422 validation_error",
+        "titleNumber": "422 validation_error",
+        "accessBad": "422 validation_error",
+        "nameArray": "422 validation_error",
+        "notJson": "422 validation_error",
+        "negDuration": "422 validation_error",
+        "floatDuration": "422 validation_error",
+        "naiveStart": "200 ",
+        "naiveStartStoredAs": "2031-01-01T10:00:00Z"
+      }
+    },
+    {
+      "name": "api: a number title is coerced or refused (info)",
+      "pass": null,
+      "evidence": {
+        "titleNumber": "422 validation_error"
+      }
+    },
+    {
+      "name": "api: code with letters: pure letters 404; digits mixed with letters are stripped to the digits (info)",
+      "pass": true,
+      "evidence": {
+        "lookup": 404,
+        "lookupMixed": 200,
+        "join": 404,
+        "participants": 404
+      }
+    },
+    {
+      "name": "api: PATCH with a non-integer id gives 422 or 404, not 500",
+      "pass": true,
+      "evidence": {
+        "status": 422
+      }
+    },
+    {
+      "name": "api: CORS does not allow a random origin with credentials",
+      "pass": true,
+      "evidence": {
+        "preflightStatus": 400,
+        "preflightACAO": null,
+        "simpleACAO": null,
+        "frontendACAO": "http://localhost:3000",
+        "frontendACAC": "true"
+      }
+    },
+    {
+      "name": "api: session cookie flags (HttpOnly, SameSite=Lax, Path=/; Secure only on https)",
+      "pass": true,
+      "evidence": {
+        "setCookie": "session=<jwt>; HttpOnly; Max-Age=604800; Path=/; SameSite=lax"
+      }
+    },
+    {
+      "name": "api: logout clears the cookie (Max-Age=0 or expires in the past)",
+      "pass": true,
+      "evidence": {
+        "status": 204,
+        "setCookie": "session=\"\"; expires=Wed, 30 Sep 2026 05:20:41 GMT; Max-Age=0; Path=/; SameSite=lax"
+      }
+    },
+    {
+      "name": "api: logout by GET is not allowed",
+      "pass": true,
+      "evidence": {
+        "status": 405
+      }
+    },
+    {
+      "name": "api: tampered JWTs (swapped sub, alg none, cut signature, wrong typ) are refused",
+      "pass": true,
+      "evidence": {
+        "swappedSub": 401,
+        "algNone": 401,
+        "truncatedSig": 401,
+        "wsTicketAsSession": 401,
+        "rejoinAsSession": 401,
+        "sessionAsTicket": 403,
+        "nonexistentUser": null
+      }
+    },
+    {
+      "name": "api: a token signed with a guessed key is refused",
+      "pass": true,
+      "evidence": {
+        "status": 401
+      }
+    },
+    {
+      "name": "api: rate limiting on login, join, passcode guessing",
+      "pass": false,
+      "evidence": {
+        "demoLogins200": 82,
+        "joins200": 50,
+        "passcodeGuesses403": 100,
+        "any429": false,
+        "ms": 91277
+      }
+    },
+    {
+      "name": "api: 50 flood guests (no socket) all sit in the participant list",
+      "pass": null,
+      "evidence": {
+        "activeParticipants": 54
+      }
+    },
+    {
+      "name": "api: invite_link for a non-host has no ?pwd=",
+      "pass": true,
+      "evidence": {
+        "link": "http://localhost:3000/j/6208362742",
+        "passcodeField": "s3cret"
+      }
+    },
+    {
+      "name": "api: host cancels a scheduled meeting that has participant rows",
+      "pass": true,
+      "evidence": {
+        "status": 204,
+        "cancelledMeetingId": 19
+      }
+    }
+  ],
+  "liveCode": "4398418723",
+  "cancelledId": 19
+}

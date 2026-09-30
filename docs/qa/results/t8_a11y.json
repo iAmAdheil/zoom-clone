@@ -1,0 +1,439 @@
+{
+  "rows": [
+    {
+      "name": "a11y: <html lang> is set",
+      "pass": true,
+      "evidence": {
+        "lang": "en"
+      }
+    },
+    {
+      "name": "a11y: join form tab order reaches ID, name, passcode, remember, Join; every stop shows a focus ring",
+      "pass": true,
+      "evidence": {
+        "seq": [
+          {
+            "tag": "a",
+            "name": "Zoom clone home",
+            "ring": true
+          },
+          {
+            "tag": "a",
+            "name": "Back to Home",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "code",
+            "name": "Meeting ID or invite link",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "name",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "passcode",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "remember",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "a",
+            "name": "Privacy & Legal Policies",
+            "ring": true
+          },
+          {
+            "tag": "body"
+          },
+          {
+            "tag": "a",
+            "name": "Zoom clone home",
+            "ring": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "a11y: Enter in the join form submits it",
+      "pass": true,
+      "evidence": {
+        "url": "http://localhost:3000/meeting/9201844239",
+        "focusAfterIdTab": {
+          "tag": "input",
+          "id": "passcode",
+          "name": "",
+          "ring": true
+        }
+      }
+    },
+    {
+      "name": "a11y: Enter in the pre-join name field joins the room",
+      "pass": true,
+      "evidence": {}
+    },
+    {
+      "name": "a11y: room toolbar is reachable by Tab with a visible focus ring",
+      "pass": true,
+      "evidence": {
+        "roomSeq": [
+          {
+            "tag": "button",
+            "name": "Meeting information",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Mute",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Audio options",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Stop Video",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Video options",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "1\nParticipants",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Chat",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Reactions",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Share Screen",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "More",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Leave",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Meeting information",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Mute",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Audio options",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Stop Video",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Video options",
+            "ring": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "a11y: popover opens with Enter, closes with Escape, focus returns to trigger",
+      "pass": true,
+      "evidence": {
+        "opened": 1,
+        "closed": 0,
+        "focus": {
+          "tag": "button",
+          "name": "Meeting information",
+          "ring": true
+        }
+      }
+    },
+    {
+      "name": "a11y: every room button has an accessible name",
+      "pass": true,
+      "evidence": {
+        "unnamed": []
+      }
+    },
+    {
+      "name": "a11y: toolbar button names (the Participants name starts with the count)",
+      "pass": null,
+      "evidence": {
+        "names": [
+          "Mute",
+          "",
+          "Stop Video",
+          "",
+          "1Participants",
+          "Chat",
+          "Reactions",
+          "Share Screen",
+          "More",
+          "Leave"
+        ]
+      }
+    },
+    {
+      "name": "a11y: schedule form tab order covers every field with a visible focus ring",
+      "pass": false,
+      "evidence": {
+        "seq": [
+          {
+            "tag": "input",
+            "id": "topic",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Add Description",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "date",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "date",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "date",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "date",
+            "name": "",
+            "ring": false
+          },
+          {
+            "tag": "select",
+            "name": "Start time",
+            "ring": true
+          },
+          {
+            "tag": "select",
+            "name": "AM or PM",
+            "ring": true
+          },
+          {
+            "tag": "select",
+            "id": "duration-hr",
+            "name": "Hours",
+            "ring": true
+          },
+          {
+            "tag": "select",
+            "name": "Minutes",
+            "ring": true
+          },
+          {
+            "tag": "select",
+            "id": "timezone",
+            "name": "(GMT+5:30) India\n(GMT+1:00) Lo",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "use-passcode",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "name": "Passcode",
+            "ring": true
+          },
+          {
+            "tag": "input",
+            "id": "access-guests",
+            "name": "",
+            "ring": true
+          },
+          {
+            "tag": "button",
+            "name": "Save",
+            "ring": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "a11y: Enter in the schedule topic field submits the form",
+      "pass": true,
+      "evidence": {}
+    },
+    {
+      "name": "a11y: each page has its own <title>",
+      "pass": false,
+      "evidence": {
+        "404": "Zoom clone",
+        "signin": "Sign in - Zoom clone",
+        "join": "Join Meeting - Zoom clone",
+        "invite-link": "Join Meeting - Zoom clone",
+        "prejoin": "Meeting - Zoom clone",
+        "not-found-meeting": "Meeting - Zoom clone",
+        "room": "Meeting - Zoom clone",
+        "dashboard": "Zoom clone",
+        "schedule": "Schedule Meeting - Zoom clone"
+      }
+    },
+    {
+      "name": "a11y: axe finds no serious or critical violations",
+      "pass": false,
+      "evidence": {
+        "404": [],
+        "signin": [],
+        "join": [],
+        "invite-link": [
+          "color-contrast(1)"
+        ],
+        "prejoin": [],
+        "not-found-meeting": [],
+        "room": [],
+        "dashboard": [
+          "color-contrast(22)"
+        ],
+        "schedule": [
+          "color-contrast(1)",
+          "link-in-text-block(1)"
+        ]
+      }
+    }
+  ],
+  "axe": {
+    "404": [
+      {
+        "id": "landmark-one-main",
+        "impact": "moderate",
+        "count": 1,
+        "help": "Document should have one main landmark",
+        "sample": [
+          "html"
+        ]
+      },
+      {
+        "id": "region",
+        "impact": "moderate",
+        "count": 2,
+        "help": "All page content should be contained by landmarks",
+        "sample": [
+          "h1 :: Some page content is not contained by landmarks",
+          "div:nth-child(2) > div > div :: Some page content is not contained by landmarks"
+        ]
+      }
+    ],
+    "signin": [],
+    "join": [],
+    "invite-link": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "count": 1,
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "sample": [
+          "p:nth-child(2) :: Element has insufficient color contrast of 4.27 (foreground color: #747487, background color: #f7f7fa, font size: 9.0pt "
+        ]
+      }
+    ],
+    "prejoin": [],
+    "not-found-meeting": [],
+    "room": [
+      {
+        "id": "region",
+        "impact": "moderate",
+        "count": 4,
+        "help": "All page content should be contained by landmarks",
+        "sample": [
+          "p :: Some page content is not contained by landmarks",
+          ".gap-3.shrink-0.text-xs :: Some page content is not contained by landmarks",
+          ".min-h-0 :: Some page content is not contained by landmarks"
+        ]
+      }
+    ],
+    "dashboard": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "count": 22,
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "sample": [
+          ".bg-avatar-3 :: Element has insufficient color contrast of 3.11 (foreground color: #ffffff, background color: #00a39e, font size: 9.0pt ",
+          ".items-start.gap-3.px-3:nth-child(1) > .flex-1.min-w-0 > .gap-x-2.flex-wrap.mt-0\\.5 > .bg-primary-soft.text-primary[title=\"Anyone with the link can join\"] :: Element has insufficient color contrast of 3.96 (foreground color: #0e72ed, background color: #e8f1fd, font size: 8.3pt ",
+          ".items-start.gap-3.px-3:nth-child(3) > .flex-1.min-w-0 > .gap-x-2.flex-wrap.mt-0\\.5 > .bg-primary-soft.text-primary[title=\"Anyone with the link can join\"] :: Element has insufficient color contrast of 3.96 (foreground color: #0e72ed, background color: #e8f1fd, font size: 8.3pt "
+        ]
+      }
+    ],
+    "schedule": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "count": 1,
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "sample": [
+          ".bg-avatar-3 :: Element has insufficient color contrast of 3.11 (foreground color: #ffffff, background color: #00a39e, font size: 9.0pt "
+        ]
+      },
+      {
+        "id": "link-in-text-block",
+        "impact": "serious",
+        "count": 1,
+        "help": "Links must be distinguishable without relying on color",
+        "sample": [
+          ".mt-6 > .hover\\:underline.text-primary.rounded-sm :: The link has insufficient color contrast of 1.01:1 with the surrounding text. (Minimum contrast is 3:1, link text: #0e72"
+        ]
+      }
+    ]
+  },
+  "titles": {
+    "404": "Zoom clone",
+    "signin": "Sign in - Zoom clone",
+    "join": "Join Meeting - Zoom clone",
+    "invite-link": "Join Meeting - Zoom clone",
+    "prejoin": "Meeting - Zoom clone",
+    "not-found-meeting": "Meeting - Zoom clone",
+    "room": "Meeting - Zoom clone",
+    "dashboard": "Zoom clone",
+    "schedule": "Schedule Meeting - Zoom clone"
+  }
+}

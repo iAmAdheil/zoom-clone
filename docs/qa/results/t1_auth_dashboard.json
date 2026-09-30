@@ -1,0 +1,198 @@
+[
+  {
+    "name": "auth: logged-out / redirects to /signin",
+    "pass": true,
+    "evidence": {
+      "url": "http://localhost:3000/signin?next=%2F"
+    }
+  },
+  {
+    "name": "auth: logged-out /schedule redirects to /signin",
+    "pass": true,
+    "evidence": {
+      "url": "http://localhost:3000/signin?next=%2Fschedule"
+    }
+  },
+  {
+    "name": "auth: invalid session cookie on / ends on /signin",
+    "pass": true,
+    "evidence": {
+      "url": "http://localhost:3000/signin?next=%2F",
+      "text": "zoom\nJoin a meeting\nSign in\nEmail address\nNext\nStay signed in\nor sign in with\nContinue with Google\nContinue as demo user\n\nBy signing in, I agree to the Privacy Statement and Terms of Service.\nThe demo"
+    }
+  },
+  {
+    "name": "auth: demo login lands on / and /api/me is the demo user",
+    "pass": true,
+    "evidence": {
+      "id": 1,
+      "email": "demo@zoomclone.test",
+      "name": "Demo User",
+      "avatar_url": null,
+      "is_demo": true
+    }
+  },
+  {
+    "name": "auth: session cookie HttpOnly + SameSite=Lax",
+    "pass": true,
+    "evidence": {
+      "httpOnly": true,
+      "sameSite": "Lax",
+      "secure": false,
+      "expiresInDays": 7
+    }
+  },
+  {
+    "name": "auth: logout clears the session (/api/me 401, / -> /signin)",
+    "pass": true,
+    "evidence": {
+      "meStatus": 401,
+      "url": "http://localhost:3000/signin?next=%2F"
+    }
+  },
+  {
+    "name": "auth: /signin?next= does not redirect off-site",
+    "pass": false,
+    "evidence": {
+      "//evil.example/": "http://localhost:3000/",
+      "/%09/evil.example/": "chrome-error://chromewebdata/",
+      "/%5C/evil.example/": "http://localhost:3000/",
+      "https://evil.example/": "http://localhost:3000/"
+    }
+  },
+  {
+    "name": "auth: /api/auth/google/login redirects to Google with client_id and redirect_uri",
+    "pass": true,
+    "evidence": {
+      "status": 302,
+      "host": "accounts.google.com",
+      "hasClientId": true,
+      "redirect_uri": "http://localhost:3000/api/auth/google/callback",
+      "scope": "openid email profile",
+      "hasState": true
+    }
+  },
+  {
+    "name": "auth: Google callback with a forged state gives a clean 400 (no 500)",
+    "pass": true,
+    "evidence": {
+      "status": 400,
+      "body": "{\"detail\":\"Google sign-in failed: mismatching_state\",\"code\":\"google_auth_failed\"}"
+    }
+  },
+  {
+    "name": "dashboard: Upcoming matches the API (count and order)",
+    "pass": true,
+    "evidence": {
+      "api": 4,
+      "dom": 4
+    }
+  },
+  {
+    "name": "dashboard: Recent matches the API (count and order)",
+    "pass": true,
+    "evidence": {
+      "api": 16,
+      "dom": 16
+    }
+  },
+  {
+    "name": "dashboard: access badges match the API",
+    "pass": true,
+    "evidence": {
+      "upcoming": [
+        "allow_guests",
+        "verified_only",
+        "allow_guests",
+        "verified_only"
+      ],
+      "domBadges": [
+        "guests",
+        "verified",
+        "guests",
+        "verified"
+      ]
+    }
+  },
+  {
+    "name": "dashboard: a lapsed scheduled meeting (never started) is labeled correctly in Recent",
+    "pass": true,
+    "evidence": {
+      "lapsed": [],
+      "rows": []
+    }
+  },
+  {
+    "name": "dashboard: copy invite link puts the host link (with ?pwd when set) on the clipboard",
+    "pass": true,
+    "evidence": {
+      "clip": "http://localhost:3000/j/5010966131",
+      "expected": "http://localhost:3000/j/5010966131"
+    }
+  },
+  {
+    "name": "dashboard: upcoming times follow the browser time zone",
+    "pass": true,
+    "evidence": {
+      "America/New_York": {
+        "row": "Tomorrow, 6:00 AM - 6:30 AM",
+        "expectedStart": "6:00 AM",
+        "ok": true
+      },
+      "Asia/Kolkata": {
+        "row": "Tomorrow, 3:30 PM - 4:00 PM",
+        "expectedStart": "3:30 PM",
+        "ok": true
+      }
+    }
+  },
+  {
+    "name": "dashboard: empty states (mocked API) show friendly text",
+    "pass": true,
+    "evidence": {
+      "snippet": "zoom\nSchedule\nJoin\nHost\nCO\n\nPERSONAL\n\nHome\nProfile\nMeetings\nWebinars\nPersonal Contacts\nRecordings\nSettings\nScheduler\nReports\nHome\n\nGood morning, Carla. You have no more meetings today.\n\nNew Meeting\nJoin\nSchedule\nShare Screen\n\n11:08 AM\n\nWednesday, September 30\n\nUpcoming\nSchedule\n\nNo upcoming meetings. Use Schedule to plan one.\n\nRecent\n\nYou have no recent meetings. Start one with New Meeting."
+    }
+  },
+  {
+    "name": "dashboard: upcoming error state shows a retry",
+    "pass": true,
+    "evidence": {
+      "text": "11:08 AM\n\nWednesday, September 30\n\nUpcoming\nSchedule\n\nboom\nTry again"
+    }
+  },
+  {
+    "name": "instant: New Meeting opens /meeting/<10 digits>",
+    "pass": true,
+    "evidence": {
+      "code": "3399277706",
+      "ms": 122
+    }
+  },
+  {
+    "name": "instant: meeting is live right after creation",
+    "pass": true,
+    "evidence": {
+      "meeting_code": "3399277706",
+      "title": "Demo User's meeting",
+      "host_name": "Demo User",
+      "status": "live",
+      "access": "allow_guests",
+      "requires_passcode": false
+    }
+  },
+  {
+    "name": "instant: info popover shows 3-4-3 code, invite link, passcode row",
+    "pass": true,
+    "evidence": {
+      "grouped": "339 9277 706",
+      "hasLink": true
+    }
+  },
+  {
+    "name": "instant: host can end via API",
+    "pass": true,
+    "evidence": {
+      "status": 200
+    }
+  }
+]

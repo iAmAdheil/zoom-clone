@@ -1,0 +1,200 @@
+[
+  {
+    "name": "ws: a fresh ticket opens and the first message is the snapshot",
+    "pass": true,
+    "evidence": {
+      "first": "snapshot"
+    }
+  },
+  {
+    "name": "ws: ticket reuse is refused with 4401 ticket_used",
+    "pass": true,
+    "evidence": {
+      "code": 4401,
+      "reason": "ticket_used"
+    }
+  },
+  {
+    "name": "ws: a ticket for another meeting is refused with 4403 wrong_meeting",
+    "pass": true,
+    "evidence": {
+      "code": 4403,
+      "reason": "wrong_meeting"
+    }
+  },
+  {
+    "name": "ws: a garbage ticket is refused with 4401 invalid_ticket",
+    "pass": true,
+    "evidence": {
+      "code": 4401,
+      "reason": "invalid_ticket"
+    }
+  },
+  {
+    "name": "ws: malformed messages get an error event and the socket stays open",
+    "pass": false,
+    "evidence": {
+      "replies": {
+        "garbage text": "error:bad_event",
+        "empty object": "error:bad_event",
+        "unknown type": "error:bad_event",
+        "set_muted string": "participant_updated:",
+        "signal to self": "error:bad_target",
+        "signal to unknown": "error:bad_target",
+        "signal data not object": "error:bad_event",
+        "signal 17 KB": "error:bad_target",
+        "1 MB text": "error:payload_too_large",
+        "binary frame": "error:bad_event"
+      },
+      "closed": null
+    }
+  },
+  {
+    "name": "ws: a 20 MB message closes only that socket (1009) and the server lives",
+    "pass": true,
+    "evidence": {
+      "closed": {
+        "code": 1009,
+        "reason": "frame with 20971520 bytes exceeds limit of 16777216 bytes"
+      }
+    }
+  },
+  {
+    "name": "ws: many sockets for one participant: count accepted (no per-participant cap)",
+    "pass": false,
+    "evidence": {
+      "openSockets": 21,
+      "sameParticipant": true,
+      "connectedIdsInSnapshot": [
+        132
+      ]
+    }
+  },
+  {
+    "name": "ws: an expired ticket (65 s) is refused with 4401 invalid_ticket",
+    "pass": true,
+    "evidence": {
+      "code": 4401,
+      "reason": "invalid_ticket"
+    }
+  },
+  {
+    "name": "api: GET participants with an expired ticket is refused",
+    "pass": true,
+    "evidence": {
+      "status": 403
+    }
+  },
+  {
+    "name": "realtime: a guest who joined by REST and never opened a socket is still listed after 65 s (ghost)",
+    "pass": false,
+    "evidence": {
+      "ghostStillListed": true,
+      "listed": [
+        "raw wrong",
+        "raw late"
+      ]
+    }
+  },
+  {
+    "name": "realtime: guest socket killed -> guest reconnects with the same id; host still gets its video",
+    "pass": true,
+    "evidence": {
+      "back": true,
+      "sameId": true,
+      "hostTiles": [
+        "RT Two:320",
+        "RT One:320"
+      ],
+      "timeline": [
+        "521ms host=2 g1=Reconnecting...|",
+        "1032ms host=2 g1=Reconnecting...|",
+        "1542ms host=3 g1=",
+        "2068ms host=3 g1="
+      ]
+    }
+  },
+  {
+    "name": "realtime: guest offline 5 s then online: room recovers (3 people, remote media flows)",
+    "pass": true,
+    "evidence": {
+      "recovered": true,
+      "recoverMs": 13172,
+      "duringOffline": [
+        "505ms host=3 g2=",
+        "1014ms host=3 g2=",
+        "1521ms host=3 g2=",
+        "2028ms host=3 g2=",
+        "2541ms host=3 g2=",
+        "3050ms host=3 g2=",
+        "3562ms host=3 g2=",
+        "4075ms host=3 g2=",
+        "4590ms host=3 g2=",
+        "5096ms host=3 g2="
+      ],
+      "g2Text": "QA realtime room\n\n00:28\nView\nDemo User\nHost\nRT Two\nRT One\nMute\nStop Video\n3\nParticipants\nChat\nReactions\nShare Screen\nMor",
+      "g2Tiles": [
+        "Demo User:320",
+        "RT One:320"
+      ],
+      "pcs": [
+        {
+          "state": "connected",
+          "audioBytesDelta": 7505,
+          "videoFramesDelta": 37,
+          "outAudioBytesDelta": 7661
+        },
+        {
+          "state": "connected",
+          "audioBytesDelta": 7886,
+          "videoFramesDelta": 38,
+          "outAudioBytesDelta": 7458
+        }
+      ]
+    }
+  },
+  {
+    "name": "realtime: ghost (REST join, no socket) disappears from others within 150 s",
+    "pass": false,
+    "evidence": {
+      "visibleAfterMs": 10,
+      "goneAfterMs": null,
+      "stillInApiListAt150s": true
+    }
+  },
+  {
+    "name": "realtime: a late joiner also sees the ghost tile (no video forever)",
+    "pass": false,
+    "evidence": {
+      "tiles": [
+        "Demo User",
+        "RT One",
+        "RT Two",
+        "Ghost guest",
+        "RT Three (you)"
+      ]
+    }
+  },
+  {
+    "name": "realtime: 10 fast join/leave cycles leave no extra tiles, no open PCs, no live tracks",
+    "pass": true,
+    "evidence": {
+      "ms": 9898,
+      "hostTiles": [
+        "Demo User (you)",
+        "RT Two",
+        "RT One",
+        "RT Three"
+      ],
+      "server": [
+        "Demo User",
+        "RT One",
+        "RT Two",
+        "RT Three"
+      ],
+      "hostOpenPcs": 3,
+      "guestStreams": 1,
+      "liveStreams": 0
+    }
+  }
+]

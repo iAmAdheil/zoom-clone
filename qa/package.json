@@ -1,0 +1,10 @@
+{
+  "name": "zoom-clone-qa",
+  "private": true,
+  "type": "module",
+  "description": "QA scripts only. Not part of the app.",
+  "devDependencies": {
+    "axe-core": "^4.13.0",
+    "playwright": "1.60"
+  }
+}

@@ -1,0 +1,530 @@
+[
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=ig7QO1A8psxw9zx7 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/6955810062?_rsc=H7O4q1DLWnZiALt1 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-D3Jb5zEawfMPTX6 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-D3Jb5zEawfMPTX6 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/7595230815?pwd=Pa55"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/7595230815?pwd=Pa55"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=ry6IRyNvcbrxbKxO net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/7595230815?pwd=Pa55"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/7595230815?_rsc=wxZS4qcN9bX-7-eX net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/7595230815?pwd=Pa55"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-D3Jb5zEawfMPTX6 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.404",
+    "text": "GET http://localhost:3000/api/meetings/1234567890",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.404",
+    "text": "GET http://localhost:3000/api/meetings/1234567890",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.404",
+    "text": "GET http://localhost:3000/api/meetings/1234567890",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-FhNYCqANgn8y6tD net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=-FhNYCqANgn8y6tD net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=dw301ByE7yxXoo57 net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/abc"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=dw301ByE7yxXoo57 net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/abc"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/meeting/abc"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/meeting/abc"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=TZHnFvxZpJMqEnRK net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/abc"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=TZHnFvxZpJMqEnRK net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/abc"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=blxdE4uIhi622Vq9 net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.403",
+    "text": "POST http://localhost:3000/api/meetings/7595230815/join",
+    "url": "http://localhost:3000/j/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "url": "http://localhost:3000/j/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/meeting/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/meeting/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/7595230815"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=uuSukmzdkHXIW5sj net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/3091994293"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/3091994293"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/3091994293"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=r77MimAC5YPxmiCR net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/3091994293"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=_XFiV5tRkemjj2CV net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/3091994293"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/meeting/3091994293"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/meeting/3091994293"
+  },
+  {
+    "ctx": "verified-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=SQvlTcSrMveQY0Dr net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/4369329809"
+  },
+  {
+    "ctx": "verified-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/4369329809"
+  },
+  {
+    "ctx": "verified-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/4369329809"
+  },
+  {
+    "ctx": "verified-guest",
+    "kind": "http.403",
+    "text": "POST http://localhost:3000/api/meetings/4369329809/join",
+    "url": "http://localhost:3000/j/4369329809"
+  },
+  {
+    "ctx": "verified-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "url": "http://localhost:3000/j/4369329809"
+  },
+  {
+    "ctx": "verified-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=4aEiWG3rD_raL6Ic net::ERR_ABORTED",
+    "url": "http://localhost:3000/signin?next=%2Fj%2F4369329809"
+  },
+  {
+    "ctx": "verified-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/j/4369329809?_rsc=lORxScbd-dPN8IK6 net::ERR_ABORTED",
+    "url": "http://localhost:3000/signin?next=%2Fj%2F4369329809"
+  },
+  {
+    "ctx": "early-click",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=nnRWrIZGDRFH5x6G net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "early-click",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=jiMA7hq-JYoWdC2y net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "early-click",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=nnRWrIZGDRFH5x6G net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "early-click",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=jiMA7hq-JYoWdC2y net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=jiMA7hq-JYoWdC2y net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "join-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "long-name-guest",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=jiMA7hq-JYoWdC2y net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "long-name-guest",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "long-name-guest",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/6955810062"
+  },
+  {
+    "ctx": "xss-title",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=gD6amyyfv0aENnhI net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/1071707162"
+  },
+  {
+    "ctx": "xss-title",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=k--HX_TvDKD6fojG net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/1071707162"
+  },
+  {
+    "ctx": "xss-title",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/1071707162"
+  },
+  {
+    "ctx": "xss-title",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/1071707162"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/7595230815?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/5010966131?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2518047537?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/1218204859?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/7595230815?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/5010966131?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2518047537?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/1218204859?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/7125040181?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/4369329809?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/6955810062?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "join-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/1071707162?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  }
+]
