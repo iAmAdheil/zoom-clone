@@ -1,0 +1,26 @@
+# Render Blueprint for the backend. The frontend is on Vercel (see docs/deploy.md).
+services:
+  - type: web
+    name: zoom-clone-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: ENABLE_DEMO_LOGIN
+        value: "true"
+      # Render makes a random value once and keeps it.
+      - key: JWT_SECRET
+        generateValue: true
+      # The Vercel URL, with https and no trailing slash. Set it in the dashboard.
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false

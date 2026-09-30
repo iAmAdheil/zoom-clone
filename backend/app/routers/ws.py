@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.db import get_session_factory
 from app.core.errors import AppError
 from app.schemas.ws import Leave, Signal, client_event_adapter
@@ -112,6 +113,12 @@ async def meeting_socket(
 ) -> None:
     # Accept first, so a browser sees the close code and reason of a rejection.
     await websocket.accept()
+    # A browser always sends `Origin`. Only the frontend origin may connect.
+    # A client with no `Origin` header (a script or a test) is not a browser. The ticket guards it.
+    origin = websocket.headers.get("origin")
+    if origin is not None and origin.rstrip("/") != get_settings().allowed_origin:
+        await websocket.close(code=4403, reason="origin_not_allowed")
+        return
     try:
         seat = await _with_db(open_db, room_service.take_seat, code, ticket)
     except AppError as exc:
