@@ -39,7 +39,13 @@ class Settings(BaseSettings):
 
     @property
     def cookie_secure(self) -> bool:
-        return self.frontend_origin.startswith("https://")
+        """Cookies get the Secure flag in production, or when the frontend uses https."""
+        return self.is_production or self.frontend_origin.startswith("https://")
+
+    @property
+    def allowed_origin(self) -> str:
+        """The one browser origin allowed for CORS and the WebSocket. No trailing slash."""
+        return self.frontend_origin.strip().rstrip("/")
 
 
 @lru_cache
