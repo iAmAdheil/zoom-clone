@@ -26,7 +26,7 @@ export function ParticipantTile({
   style,
   className,
 }: ParticipantTileProps) {
-  const { display_name: name, is_muted, is_video_off } = participant;
+  const { display_name: name, role, is_muted, is_video_off } = participant;
 
   return (
     <figure
@@ -61,6 +61,11 @@ export function ParticipantTile({
       <figcaption className="absolute bottom-1 left-1 flex max-w-[calc(100%-8px)] items-center gap-1 rounded-sm bg-room-overlay px-1.5 py-0.5 text-xs text-room-text">
         {is_muted ? <Icon name="micOff" size={13} className="shrink-0 text-danger" strokeWidth={2} /> : null}
         <span className="truncate">{name}</span>
+        {role === "attendee" ? null : (
+          <span className="shrink-0 rounded-sm bg-primary px-1 text-2xs font-bold">
+            {role === "host" ? "Host" : "Co-host"}
+          </span>
+        )}
       </figcaption>
     </figure>
   );

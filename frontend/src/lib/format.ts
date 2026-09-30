@@ -3,11 +3,11 @@ import type { MeetingAccess } from "./types";
 // Date formatters. With no `timeZone` they use the browser time zone.
 // Only client components call them, after the data loads, so the server never prints a time.
 
-/** "8123456790" -> "812 345 6790" (the Zoom meeting ID layout). */
+/** "8123456790" -> "812 3456 790" (3-4-3 grouping of the 10-digit meeting ID). */
 export function formatMeetingCode(code: string): string {
   const d = code.replace(/\D/g, "");
   if (d.length !== 10) return d;
-  return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
+  return `${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7)}`;
 }
 
 const TIME: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };

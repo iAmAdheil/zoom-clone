@@ -27,7 +27,8 @@ export function bestTileSize(count: number, box: Size, aspect: number): Size {
 type VideoGridProps = {
   participants: Participant[];
   selfId: number;
-  speakerId: number;
+  /** The active speaker. Null while the app has no audio levels. */
+  speakerId: number | null;
   selfStream: MediaStream | null;
   reaction: { emoji: string; key: number } | null;
   /** Square tiles on phones, 16:9 elsewhere. */

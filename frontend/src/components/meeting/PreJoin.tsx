@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 import { formatMeetingCode } from "@/lib/format";
 import { rememberedName } from "@/lib/storage";
 import { useJoinMeeting } from "@/lib/useJoinMeeting";
-import { useLocalCamera } from "./useLocalCamera";
+import { useLocalCamera } from "./useLocalMedia";
 import { FeedPlaceholder, LiveVideo } from "./VideoFeed";
 
 type PreJoinProps = {

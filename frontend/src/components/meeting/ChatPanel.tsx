@@ -74,6 +74,11 @@ export function ChatPanel({ messages, selfName, onSend, onClose }: ChatPanelProp
         </form>
       }
     >
+      {messages.length === 0 ? (
+        <p className="px-4 py-8 text-center text-sm text-ink-muted">
+          No messages yet. Chat does not reach the others yet. Your messages stay in this window.
+        </p>
+      ) : null}
       <ol className="flex flex-col gap-4 p-4">
         {messages.map((m) => {
           const mine = m.from === selfName;

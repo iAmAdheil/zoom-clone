@@ -1,35 +1,22 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { SimpleShell } from "@/components/layout/SimpleShell";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { Icon, type IconName } from "@/components/ui/Icon";
 import { ApiError, errorMessage } from "@/lib/api";
 import { useMeetingSession } from "@/lib/meetingStore";
 import { useMe, useMeetingLookup } from "@/lib/queries";
 import { rememberedName } from "@/lib/storage";
+import { MeetingNotice as Notice } from "./MeetingNotice";
 import { MeetingRoom } from "./MeetingRoom";
 import { PreJoin } from "./PreJoin";
 
-type Stage = "preview" | "room" | "left";
+type Stage = "preview" | "room" | "ended";
 
-/** Full-page message in the light shell: "meeting not found", "you left", and so on. */
-function Notice({ icon = "video", title, detail, children }: { icon?: IconName; title: string; detail?: string; children?: ReactNode }) {
-  return (
-    <SimpleShell>
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
-        <span className="rounded-full bg-primary-soft p-3 text-primary">
-          <Icon name={icon} size={28} />
-        </span>
-        <h1 className="text-2xl font-bold text-ink">{title}</h1>
-        {detail ? <p className="text-sm text-ink-muted">{detail}</p> : null}
-        <div className="mt-2 flex gap-3">{children ?? <ButtonLink href="/">Back to Home</ButtonLink>}</div>
-      </div>
-    </SimpleShell>
-  );
-}
-
-/** /meeting/[code]: pre-join preview, then the room, then the "you left" page. */
+/**
+ * /meeting/[code]: pre-join preview, then the room.
+ * "Leave" goes to another page (see useRoom). "End for all" shows the "ended" page here.
+ */
 export function MeetingExperience({ code }: { code: string }) {
   const lookup = useMeetingLookup(code.length === 10 ? code : null);
   const me = useMe();
@@ -37,7 +24,6 @@ export function MeetingExperience({ code }: { code: string }) {
   const [stage, setStage] = useState<Stage>("preview");
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
-  const [endedForAll, setEndedForAll] = useState(false);
 
   if (stage === "room" && session) {
     return (
@@ -46,27 +32,15 @@ export function MeetingExperience({ code }: { code: string }) {
         key={session.ws_ticket}
         code={code}
         meeting={session.meeting}
-        onLeave={(forAll) => {
-          setEndedForAll(forAll);
-          setStage("left");
-        }}
+        onEndedForAll={() => setStage("ended")}
       />
     );
   }
 
   const title = session?.meeting.title ?? lookup.data?.title ?? "";
 
-  if (stage === "left") {
-    return (
-      <Notice title={endedForAll ? "You ended the meeting for everyone" : "You left the meeting"} detail={title}>
-        {endedForAll ? null : (
-          <Button variant="secondary" onClick={() => setStage("preview")}>
-            Rejoin
-          </Button>
-        )}
-        <ButtonLink href="/">Back to Home</ButtonLink>
-      </Notice>
-    );
+  if (stage === "ended") {
+    return <Notice icon="clock" title="You ended the meeting for everyone" detail={title} />;
   }
 
   if (code.length !== 10 || (lookup.error instanceof ApiError && lookup.error.status === 404)) {
