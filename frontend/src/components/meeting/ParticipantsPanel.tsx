@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { MenuItem, Popover } from "@/components/ui/Popover";
 import { cn } from "@/lib/cn";
+import { formatMeetingCode } from "@/lib/format";
 import type { Meeting, Participant } from "@/lib/types";
 import { InviteLinkBox } from "./InviteLinkBox";
 import { SidePanel } from "./SidePanel";
@@ -14,6 +15,7 @@ type ParticipantsPanelProps = {
   meeting: Meeting;
   participants: Participant[];
   selfId: number;
+  /** True for the host and co-hosts: they see Mute, Remove and Mute All. */
   isHost: boolean;
   allowSelfUnmute: boolean;
   onClose: () => void;
@@ -70,7 +72,17 @@ export function ParticipantsPanel(props: ParticipantsPanelProps) {
               </Button>
             }
           >
-            <p className="mb-2 text-sm font-bold">Invite people</p>
+            <p className="mb-3 text-sm font-bold">Invite people</p>
+            <dl className="mb-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+              <dt className="text-ink-muted">Meeting ID</dt>
+              <dd className="font-bold tabular-nums">{formatMeetingCode(meeting.meeting_code)}</dd>
+              {meeting.passcode ? (
+                <>
+                  <dt className="text-ink-muted">Passcode</dt>
+                  <dd className="font-bold">{meeting.passcode}</dd>
+                </>
+              ) : null}
+            </dl>
             <InviteLinkBox
               meeting={meeting}
               tone="light"
@@ -157,13 +169,16 @@ export function ParticipantsPanel(props: ParticipantsPanelProps) {
                         Mute
                       </button>
                     )}
-                    <button
-                      type="button"
-                      className={cn(rowAction, "text-danger")}
-                      onClick={() => props.onRemove(p.id)}
-                    >
-                      Remove
-                    </button>
+                    {p.role === "host" ? null : (
+                      // The server never removes the host.
+                      <button
+                        type="button"
+                        className={cn(rowAction, "text-danger")}
+                        onClick={() => props.onRemove(p.id)}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 ) : null}
 

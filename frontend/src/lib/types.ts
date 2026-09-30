@@ -97,9 +97,28 @@ export type JoinResult = {
   meeting: Meeting;
 };
 
+// ---- meeting WebSocket (docs/api.md, "WebSocket") ---------------------------
+
+/** A message from the server. Each one has a `type` field. */
+export type ServerEvent =
+  | { type: "snapshot"; participants: Participant[] }
+  | { type: "participant_joined"; participant: Participant }
+  | { type: "participant_left"; participant_id: number }
+  | { type: "participant_updated"; participant: Participant }
+  | { type: "mute_all"; participant_ids: number[] }
+  | { type: "you_were_removed"; participant_id: number }
+  | { type: "meeting_ended" }
+  | { type: "error"; code: string; detail: string };
+
+/** A message to the server. */
+export type ClientEvent =
+  | { type: "set_muted"; value: boolean }
+  | { type: "set_video_off"; value: boolean }
+  | { type: "leave" };
+
 // ---- UI-only ----------------------------------------------------------------
 
-/** A chat message in the room. The API has no chat yet, so the room shows sample messages. */
+/** A chat message in the room. The API has no chat yet, so messages stay in this browser. */
 export type ChatMessage = {
   id: number;
   from: string;
