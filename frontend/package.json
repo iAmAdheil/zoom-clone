@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "npm run test:unit && npm run test:node",
+    "test:unit": "vitest run --dir src",
+    "test:node": "node --experimental-strip-types --no-warnings --test tests/*.test.mjs"
   },
   "dependencies": {
     "next": "16.3.7",

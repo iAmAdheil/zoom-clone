@@ -7,6 +7,7 @@ import { Check, Field, TextInput } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 import { ApiError, api } from "@/lib/api";
 import { formatMeetingCode } from "@/lib/format";
+import { parseJoinInput } from "@/lib/inviteLink";
 import { useMe, useMeetingLookup } from "@/lib/queries";
 import { rememberedName } from "@/lib/storage";
 import type { MeetingLookup } from "@/lib/types";
@@ -15,35 +16,26 @@ import { JoinAlert, describeJoinError } from "./joinErrors";
 
 type Errors = { code?: string; name?: string; passcode?: string; form?: string };
 
-const INVITE_LINK = /\/j\/(\d{10})/;
-
-/** Pulls the 10-digit code out of a pasted ID or invite link. */
-function parseCode(input: string): string {
-  const fromLink = input.match(INVITE_LINK);
-  if (fromLink) return fromLink[1];
-  return input.replace(/\D/g, "");
-}
-
 // The remembered name lives in localStorage. The server render uses "" and the browser
 // fills it in after hydration, so the two renders match.
 const noSubscribe = () => () => {};
 
-type JoinFormProps = { initialCode?: string };
+type JoinFormProps = { initialCode?: string; initialPasscode?: string };
 
-export function JoinForm({ initialCode = "" }: JoinFormProps) {
+export function JoinForm({ initialCode = "", initialPasscode = "" }: JoinFormProps) {
   const router = useRouter();
   const { data: me } = useMe();
   const savedName = useSyncExternalStore(noSubscribe, rememberedName.read, () => "");
   const [codeInput, setCodeInput] = useState(initialCode ? formatMeetingCode(initialCode) : "");
   const [nameDraft, setNameDraft] = useState<string | null>(null);
-  const [passcode, setPasscode] = useState("");
+  const [passcode, setPasscode] = useState(initialPasscode);
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<Errors>({});
   const [navigating, setNavigating] = useState(false);
   const joiner = useJoinMeeting();
 
   const name = nameDraft ?? (me?.name || savedName);
-  const code = parseCode(codeInput);
+  const code = parseJoinInput(codeInput).code;
   // GET /api/meetings/{code} runs as soon as the ID has 10 digits.
   const lookup = useMeetingLookup(code.length === 10 ? code : null);
   const meeting = lookup.data;
@@ -111,7 +103,14 @@ export function JoinForm({ initialCode = "" }: JoinFormProps) {
           placeholder="Meeting ID or invite link"
           value={codeInput}
           onChange={(e) => {
-            setCodeInput(e.target.value);
+            // A pasted invite link gives the code and the passcode. Show only the code.
+            const parsed = parseJoinInput(e.target.value);
+            if (parsed.isLink) {
+              setCodeInput(formatMeetingCode(parsed.code));
+              if (parsed.passcode) setPasscode(parsed.passcode);
+            } else {
+              setCodeInput(e.target.value);
+            }
             setErrors({});
             joiner.clearError();
           }}

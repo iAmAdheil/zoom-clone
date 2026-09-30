@@ -27,7 +27,9 @@ Other commands:
 
 ```bash
 npm run lint
-npm test                        # Vitest unit tests (WebRTC rules and signal parsing)
+npm test                        # both suites below
+npm run test:unit               # Vitest, src/**/*.test.ts (WebRTC rules and signal parsing)
+npm run test:node               # Node test runner, tests/*.test.mjs (join input)
 npm run build
 npm run start                   # serves the build on port 3000
 ```

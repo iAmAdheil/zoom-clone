@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ApiError, api } from "./api";
 import { meetingStore, rejoinTokens, type MeetingSession } from "./meetingStore";
+import { passcodes } from "./storage";
 
 type JoinArgs = {
   displayName: string;
@@ -24,7 +25,8 @@ export function useJoinMeeting() {
 
   async function join(code: string, args: JoinArgs): Promise<JoinOutcome> {
     const digits = code.replace(/\D/g, "");
-    const passcode = args.passcode?.trim() || undefined;
+    // With no typed passcode, use the one that worked before for this meeting (reload, reconnect).
+    const passcode = args.passcode?.trim() || passcodes.read(digits) || undefined;
     setPending(true);
     setError(null);
     try {
@@ -34,6 +36,7 @@ export function useJoinMeeting() {
         rejoin_token: rejoinTokens.read(digits) ?? undefined,
       });
       rejoinTokens.write(digits, result.rejoin_token);
+      if (passcode) passcodes.write(digits, passcode);
       const session: MeetingSession = {
         ...result,
         code: digits,
@@ -46,6 +49,8 @@ export function useJoinMeeting() {
     } catch (caught) {
       const failure =
         caught instanceof ApiError ? caught : new ApiError(0, "unknown", "Something went wrong. Try again.");
+      // A saved passcode that the server refuses is stale. Drop it.
+      if (failure.code === "bad_passcode") passcodes.write(digits, null);
       setError(failure);
       return { session: null, error: failure };
     } finally {

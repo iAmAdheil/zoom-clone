@@ -61,6 +61,14 @@ def _get_participant(db: Session, meeting: Meeting, participant_id: int) -> Part
     return participant
 
 
+def _require_in_meeting(participant: Participant) -> None:
+    """Reject a participant who left or was removed. Nothing changes and no event goes out."""
+    if participant.left_at is not None or participant.removed:
+        raise AppError(
+            409, "participant_not_in_meeting", "This participant is no longer in the meeting."
+        )
+
+
 def list_participants(db: Session, meeting: Meeting) -> list[Participant]:
     return list(
         db.scalars(
@@ -82,6 +90,7 @@ def mute_participant(db: Session, meeting: Meeting, user: User, participant_id: 
     require_controller(db, meeting, user)
     _require_live(meeting)
     participant = _get_participant(db, meeting, participant_id)
+    _require_in_meeting(participant)
     participant.is_muted = True
     db.commit()
     db.refresh(participant)
@@ -117,6 +126,7 @@ def remove_participant(
     participant = _get_participant(db, meeting, participant_id)
     if participant.role == ParticipantRole.host:
         raise AppError(403, "cannot_remove_host", "The host cannot be removed.")
+    _require_in_meeting(participant)
     participant.removed = True
     participant.left_at = participant.left_at or now()
     db.commit()
