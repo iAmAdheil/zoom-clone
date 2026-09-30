@@ -101,7 +101,7 @@ export type JoinResult = {
 
 /** A message from the server. Each one has a `type` field. */
 export type ServerEvent =
-  /** `connected_ids`: participants with an open socket now (for WebRTC later). */
+  /** `connected_ids`: participants with an open socket now. WebRTC uses it (usePeers.ts). */
   | { type: "snapshot"; participants: Participant[]; connected_ids: number[] }
   | { type: "participant_joined"; participant: Participant }
   | { type: "participant_left"; participant_id: number }
@@ -109,15 +109,17 @@ export type ServerEvent =
   | { type: "mute_all"; participant_ids: number[] }
   | { type: "you_were_removed"; participant_id: number }
   | { type: "meeting_ended" }
-  /** WebRTC relay. The room does not use it yet. */
-  | { type: "signal"; from: number; data: Record<string, unknown> }
+  /** WebRTC relay. `data` is checked by parseSignal (webrtc/signaling.ts). */
+  | { type: "signal"; from: number; data: unknown }
   | { type: "error"; code: string; detail: string };
 
 /** A message to the server. */
 export type ClientEvent =
   | { type: "set_muted"; value: boolean }
   | { type: "set_video_off"; value: boolean }
-  | { type: "leave" };
+  | { type: "leave" }
+  /** WebRTC relay to one participant. The server never reads `data`. */
+  | { type: "signal"; to: number; data: Record<string, unknown> };
 
 // ---- UI-only ----------------------------------------------------------------
 

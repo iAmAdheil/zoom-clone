@@ -22,7 +22,8 @@ type AvatarProps = {
   name: string;
   /** Profile picture (Google). Without it the avatar shows the initials. */
   src?: string | null;
-  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  /** "tile" grows with the video tile (a CSS container). */
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "tile";
   shape?: "circle" | "square";
   className?: string;
 };
@@ -33,9 +34,10 @@ const sizes = {
   md: "size-10 text-sm",
   lg: "size-16 text-xl",
   xl: "size-24 text-3xl",
+  tile: "size-[clamp(40px,22cqw,96px)] text-[clamp(14px,8cqw,30px)]",
 };
 
-const pixels = { xs: 24, sm: 32, md: 40, lg: 64, xl: 96 };
+const pixels = { xs: 24, sm: 32, md: 40, lg: 64, xl: 96, tile: 96 };
 
 export function Avatar({ name, src, size = "md", shape = "circle", className }: AvatarProps) {
   if (src) {

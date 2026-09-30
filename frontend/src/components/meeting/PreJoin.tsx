@@ -9,8 +9,8 @@ import { cn } from "@/lib/cn";
 import { formatMeetingCode } from "@/lib/format";
 import { rememberedName } from "@/lib/storage";
 import { useJoinMeeting } from "@/lib/useJoinMeeting";
-import { useLocalCamera } from "./useLocalMedia";
-import { FeedPlaceholder, LiveVideo } from "./VideoFeed";
+import { useTrackToggles, type LocalMedia } from "@/lib/webrtc/useMedia";
+import { LiveVideo } from "./VideoFeed";
 
 type PreJoinProps = {
   code: string;
@@ -18,6 +18,8 @@ type PreJoinProps = {
   defaultName: string;
   /** The passcode that worked on the join page, if any. */
   savedPasscode?: string;
+  /** The camera and microphone. The room uses the same stream after Join. */
+  media: LocalMedia;
   micOn: boolean;
   camOn: boolean;
   onToggleMic: () => void;
@@ -26,12 +28,15 @@ type PreJoinProps = {
 };
 
 const pillButton =
-  "flex min-w-16 flex-col items-center gap-0.5 rounded-md px-2 py-1 text-2xs text-room-text transition-colors hover:bg-room-hover";
+  "flex min-w-16 flex-col items-center gap-0.5 rounded-md px-2 py-1 text-2xs text-room-text transition-colors hover:bg-room-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent";
 
 /** The "Video Preview" page of the Zoom web client. Join calls the API, then opens the room. */
 export function PreJoin(props: PreJoinProps) {
-  const { code, title, micOn, camOn, onToggleMic, onToggleCam, onJoined } = props;
-  const camera = useLocalCamera(camOn);
+  const { code, title, media, onToggleMic, onToggleCam, onJoined } = props;
+  // A missing device counts as "off": the others then see the right icons.
+  const micOn = props.micOn && media.hasAudio;
+  const camOn = props.camOn && media.hasVideo;
+  useTrackToggles(media.stream, micOn, camOn);
   const [name, setName] = useState(props.defaultName);
   const [remember, setRemember] = useState(true);
   const [nameError, setNameError] = useState<string | undefined>();
@@ -67,31 +72,25 @@ export function PreJoin(props: PreJoinProps) {
       </div>
 
       <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-room-tile shadow-card">
-        {camOn ? (
-          camera.stream ? (
-            <LiveVideo stream={camera.stream} />
-          ) : (
-            <>
-              <FeedPlaceholder seed={0} />
-              {camera.error ? (
-                <p role="status" className="absolute top-3 left-3 right-3 w-fit rounded-sm bg-room-overlay px-2 py-1 text-xs text-room-text">
-                  {camera.error} Showing a sample picture.
-                </p>
-              ) : null}
-            </>
-          )
+        {camOn && media.stream ? (
+          <LiveVideo stream={media.stream} mirror />
         ) : (
           <p className="absolute inset-0 flex items-center justify-center px-4 text-center text-3xl font-bold text-room-text sm:text-4xl">
-            {name.trim() || "Your name"}
+            {media.pending ? "Starting camera..." : name.trim() || "Your name"}
           </p>
         )}
+        {media.error ? (
+          <p role="status" className="absolute top-3 right-3 left-3 w-fit rounded-sm bg-room-overlay px-2 py-1 text-xs text-room-text">
+            {media.error}
+          </p>
+        ) : null}
 
         <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-lg bg-room-bar/90 p-1">
-          <button type="button" onClick={onToggleMic} aria-pressed={!micOn} className={pillButton}>
+          <button type="button" onClick={onToggleMic} disabled={!media.hasAudio} aria-pressed={!micOn} className={pillButton}>
             <Icon name={micOn ? "mic" : "micOff"} size={22} className={micOn ? "text-success" : "text-danger"} />
             {micOn ? "Mute" : "Unmute"}
           </button>
-          <button type="button" onClick={onToggleCam} aria-pressed={!camOn} className={pillButton}>
+          <button type="button" onClick={onToggleCam} disabled={!media.hasVideo} aria-pressed={!camOn} className={pillButton}>
             <Icon name={camOn ? "video" : "videoOff"} size={22} className={cn(!camOn && "text-danger")} />
             {camOn ? "Stop Video" : "Start Video"}
           </button>
@@ -141,12 +140,14 @@ export function PreJoin(props: PreJoinProps) {
         {joinError && joinError.field !== "passcode" ? (
           <JoinAlert message={joinError.message} signInNext={joinError.needsSignIn ? `/meeting/${code}` : undefined} />
         ) : null}
-        <Button type="submit" size="lg" block disabled={joiner.pending}>
-          {joiner.pending ? "Joining..." : "Join"}
+        {/* Join waits for the devices, so every peer connection starts with the final stream. */}
+        <Button type="submit" size="lg" block disabled={joiner.pending || media.pending}>
+          {joiner.pending ? "Joining..." : media.pending ? "Starting camera..." : "Join"}
         </Button>
         <p className="text-center text-xs text-ink-muted">
-          {micOn ? "You will join with your microphone on." : "You will join muted."}{" "}
-          {camOn ? "Your video is on." : "Your video is off."}
+          {media.pending
+            ? "Allow the camera and microphone when the browser asks."
+            : `${micOn ? "You will join with your microphone on." : "You will join muted."} ${camOn ? "Your video is on." : "Your video is off."}`}
         </p>
       </div>
     </form>

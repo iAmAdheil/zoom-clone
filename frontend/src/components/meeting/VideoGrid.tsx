@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Participant } from "@/lib/types";
+import type { PeerSnapshot } from "@/lib/webrtc/peerManager";
 import { ParticipantTile } from "./ParticipantTile";
 
 const GAP = 6;
@@ -30,12 +31,14 @@ type VideoGridProps = {
   /** The active speaker. Null while the app has no audio levels. */
   speakerId: number | null;
   selfStream: MediaStream | null;
+  /** Remote streams and connection state, by participant id. */
+  peers: PeerSnapshot;
   reaction: { emoji: string; key: number } | null;
   /** Square tiles on phones, 16:9 elsewhere. */
   aspect: number;
 };
 
-export function VideoGrid({ participants, selfId, speakerId, selfStream, reaction, aspect }: VideoGridProps) {
+export function VideoGrid({ participants, selfId, speakerId, selfStream, peers, reaction, aspect }: VideoGridProps) {
   const boxRef = useRef<HTMLDivElement>(null);
   // A first guess for the server render. The observer replaces it after mount.
   const [box, setBox] = useState<Size>({ width: 1200, height: 640 });
@@ -62,7 +65,8 @@ export function VideoGrid({ participants, selfId, speakerId, selfStream, reactio
             participant={p}
             isSelf={p.id === selfId}
             speaking={p.id === speakerId}
-            stream={p.id === selfId ? selfStream : null}
+            stream={p.id === selfId ? selfStream : (peers.streams.get(p.id) ?? null)}
+            peer={p.id === selfId ? undefined : peers.info.get(p.id)}
             reaction={p.id === selfId ? reaction : null}
             style={{ width: tile.width, height: tile.height }}
           />

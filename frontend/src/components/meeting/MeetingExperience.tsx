@@ -7,6 +7,7 @@ import { ApiError, errorMessage } from "@/lib/api";
 import { useMeetingSession } from "@/lib/meetingStore";
 import { useMe, useMeetingLookup } from "@/lib/queries";
 import { rememberedName } from "@/lib/storage";
+import { useMedia } from "@/lib/webrtc/useMedia";
 import { MeetingNotice as Notice } from "./MeetingNotice";
 import { MeetingRoom } from "./MeetingRoom";
 import { PreJoin } from "./PreJoin";
@@ -16,6 +17,7 @@ type Stage = "preview" | "room" | "ended";
 /**
  * /meeting/[code]: pre-join preview, then the room.
  * "Leave" goes to another page (see useRoom). "End for all" shows the "ended" page here.
+ * This component owns the camera and microphone, so the preview and the room share one stream.
  */
 export function MeetingExperience({ code }: { code: string }) {
   const lookup = useMeetingLookup(code.length === 10 ? code : null);
@@ -24,15 +26,23 @@ export function MeetingExperience({ code }: { code: string }) {
   const [stage, setStage] = useState<Stage>("preview");
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [roomActive, setRoomActive] = useState(true);
 
-  if (stage === "room" && session) {
+  // Open the devices while the meeting loads (no waterfall), but not for an unknown or ended meeting.
+  const canPreview = code.length === 10 && lookup.data !== undefined && lookup.data.status !== "ended";
+  const inRoom = stage === "room" && session !== null;
+  const media = useMedia(inRoom ? roomActive : stage === "preview" && canPreview);
+
+  if (inRoom) {
     return (
       <MeetingRoom
         // A new join (new ticket) starts a fresh room state.
         key={session.ws_ticket}
         code={code}
         meeting={session.meeting}
+        media={media}
         onEndedForAll={() => setStage("ended")}
+        onActiveChange={setRoomActive}
       />
     );
   }
@@ -84,6 +94,7 @@ export function MeetingExperience({ code }: { code: string }) {
         title={title}
         defaultName={session?.participant.display_name || me.data?.name || rememberedName.read()}
         savedPasscode={session?.passcode}
+        media={media}
         micOn={micOn}
         camOn={camOn}
         onToggleMic={() => setMicOn((v) => !v)}

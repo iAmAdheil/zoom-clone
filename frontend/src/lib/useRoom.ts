@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useEffectEvent, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useReducer, useRef, useState } from "react";
 import { api } from "./api";
 import { rejoinTokens, useMeetingSession } from "./meetingStore";
 import { RoomSocket, type RoomStatus } from "./roomSocket";
@@ -13,6 +13,7 @@ import type { Participant, ServerEvent } from "./types";
 // the participant list in a reducer. The server events (docs/api.md) change the list.
 // Mute and video send WebSocket events. Host actions call the REST endpoints, and the server
 // then sends the event to everyone. RoomSocket (roomSocket.ts) does the reconnect.
+// WebRTC (lib/webrtc/usePeers.ts) uses `connectedIds`, `sendSignal` and `onSignal`.
 
 export type { RoomStatus };
 
@@ -33,11 +34,20 @@ export type RoomActions = {
   retry: () => void;
 };
 
+/** Gets the `from` id and the raw `data` of each `signal` event. */
+export type SignalListener = (from: number, data: unknown) => void;
+
 export type Room = {
   participants: Participant[];
   me: Participant | null;
   status: RoomStatus;
   actions: RoomActions;
+  /** `connected_ids` of the latest snapshot. A new array after each snapshot (also after a reconnect). */
+  connectedIds: readonly number[] | null;
+  /** Sends a WebRTC `signal` to one participant. False before the snapshot or while offline. Stable. */
+  sendSignal: (to: number, data: Record<string, unknown>) => boolean;
+  /** Subscribes to `signal` events. Returns the unsubscribe function. Stable. */
+  onSignal: (listener: SignalListener) => () => void;
 };
 
 type SelfState = Pick<Participant, "is_muted" | "is_video_off">;
@@ -93,6 +103,8 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
   const ticket = session?.ws_ticket ?? null;
 
   const [status, setStatus] = useState<RoomStatus>("connecting");
+  const [connectedIds, setConnectedIds] = useState<readonly number[] | null>(null);
+  const [signalListeners] = useState(() => new Set<SignalListener>());
   const [participants, dispatch] = useReducer(roomReducer, session, (s) =>
     s ? [{ ...s.participant, is_muted: !s.micOn, is_video_off: !s.camOn }] : [],
   );
@@ -121,6 +133,7 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
       case "snapshot":
         pendingEchoes.current = 0;
         dispatch({ type: "snapshot", participants: event.participants, selfId, self: selfRef.current });
+        setConnectedIds(event.connected_ids);
         sendSelf(event.participants.find((p) => p.id === selfId));
         return;
       case "participant_joined":
@@ -145,12 +158,14 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
         }
         dispatch({ type: "mute_all", ids: event.participant_ids });
         return;
+      case "signal":
+        for (const listener of signalListeners) listener(event.from, event.data);
+        return;
       case "error":
         console.warn(`Room event refused: ${event.code}: ${event.detail}`);
         return;
       default:
         // you_were_removed and meeting_ended change the status (see RoomSocket).
-        // signal is for WebRTC, which the room does not use yet.
         return;
     }
   });
@@ -186,6 +201,21 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
     };
   }, [code, ticket]);
 
+  const sendSignal = useCallback(
+    (to: number, data: Record<string, unknown>) => socketRef.current?.send({ type: "signal", to, data }) ?? false,
+    [],
+  );
+
+  const onSignal = useCallback(
+    (listener: SignalListener) => {
+      signalListeners.add(listener);
+      return () => {
+        signalListeners.delete(listener);
+      };
+    },
+    [signalListeners],
+  );
+
   const me = participants.find((p) => p.id === selfId) ?? null;
 
   function setSelf(change: Partial<SelfState>) {
@@ -214,5 +244,5 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
     retry: () => socketRef.current?.retry(),
   };
 
-  return { participants, me, status, actions };
+  return { participants, me, status, actions, connectedIds, sendSignal, onSignal };
 }
