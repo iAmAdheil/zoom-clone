@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deviceOptions } from "./devices";
-import { mediaMessage, openDevices, statusOfError, unblockHint, type GetUserMedia } from "./mediaAccess";
+import { deviceToast, mediaMessage, openDevices, statusOfError, unblockHint, type GetUserMedia } from "./mediaAccess";
 import { SILENCE_RMS, meterFill, nextSilence, rms } from "./micLevel";
 import { isAudioMissing, isSpeaking, nextAudioProbe, readInboundAudio } from "./peerManager";
 
@@ -61,8 +61,20 @@ describe("device messages", () => {
 
   it("says that I join with the microphone only when the camera fails", () => {
     expect(mediaMessage({ audio: "ok", video: "busy" })).toBe(
-      "Another app is using the camera. You join with the microphone only.",
+      "The camera is used by another app. You join with the microphone only.",
     );
+    // BUG-20: a busy camera is not "no camera".
+    expect(mediaMessage({ audio: "busy", video: "busy" })).toBe(
+      "The camera and microphone are used by another app. You can join and still see and hear others.",
+    );
+  });
+
+  it("gives a toast for each reason a device did not open", () => {
+    expect(deviceToast("video", "busy")).toBe("The camera is used by another app. Close that app, then try again.");
+    expect(deviceToast("video", "busy")).not.toMatch(/No camera/i);
+    expect(deviceToast("audio", "missing")).toBe("No microphone was found.");
+    expect(deviceToast("video", "blocked")).toMatch(/not allowed/);
+    expect(deviceToast("audio", "unsupported")).toMatch(/cannot use a microphone/);
   });
 
   it("joins the two problems in one sentence when they match", () => {

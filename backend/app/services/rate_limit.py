@@ -3,6 +3,8 @@
 The limits (docs/api.md, "Rate limits"):
 - `POST /api/auth/demo`: `rate_limit_demo_per_minute` per client IP.
 - `POST /api/meetings/{code}/join`: `rate_limit_join_per_minute` per client IP.
+- Chat: `chat_rate_limit_messages` per participant in `chat_rate_limit_window_seconds`.
+  The WebSocket sends an `error` event `rate_limited`, not an HTTP 429.
 - Wrong passcodes: after `rate_limit_passcode_failures` wrong passcodes from one IP for
   one meeting in `rate_limit_passcode_window_seconds`, every join from that IP to that
   meeting gets 429 until the oldest failure leaves the window. A right passcode is
@@ -82,6 +84,7 @@ class SlidingWindow:
 demo_logins = SlidingWindow()
 joins = SlidingWindow()
 passcode_failures = SlidingWindow()
+chat_messages = SlidingWindow()
 
 
 def _too_many(wait: float) -> AppError:
@@ -132,14 +135,27 @@ def record_passcode_failure(client_ip: str, meeting_code: str) -> None:
         passcode_failures.record(_passcode_key(client_ip, meeting_code))
 
 
+def check_chat(meeting_id: int, participant_id: int) -> float:
+    """Count one chat message. Return 0 if allowed, or the seconds to wait."""
+    settings = get_settings()
+    if not settings.rate_limit_enabled:
+        return 0.0
+    return chat_messages.hit(
+        f"{meeting_id}|{participant_id}",
+        settings.chat_rate_limit_messages,
+        settings.chat_rate_limit_window_seconds,
+    )
+
+
 def sweep_all() -> None:
     """Forget old keys, so the memory does not grow. The reaper calls it."""
     demo_logins.sweep(60)
     joins.sweep(60)
     passcode_failures.sweep(get_settings().rate_limit_passcode_window_seconds)
+    chat_messages.sweep(get_settings().chat_rate_limit_window_seconds)
 
 
 def reset_all() -> None:
     """Forget every counter. For tests."""
-    for window in (demo_logins, joins, passcode_failures):
+    for window in (demo_logins, joins, passcode_failures, chat_messages):
         window.clear()

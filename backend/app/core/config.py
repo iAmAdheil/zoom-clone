@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     rate_limit_join_per_minute: int = 60
     rate_limit_passcode_failures: int = 10
     rate_limit_passcode_window_seconds: int = 300
+    # Chat: at most this many messages per participant in the window. More get `rate_limited`.
+    chat_rate_limit_messages: int = 10
+    chat_rate_limit_window_seconds: int = 10
     # Take the client IP from the first `X-Forwarded-For` entry (set by Render).
     # Turn it off when the server is not behind a proxy that sets the header.
     trust_forwarded_for: bool = True

@@ -1,7 +1,7 @@
 """The meeting WebSocket: /ws/meetings/{code}?ticket=<ws_ticket>.
 
 Each socket runs two tasks:
-- The reader applies client events (`set_muted`, `set_video_off`, `leave`, `signal`).
+- The reader applies client events (`set_muted`, `set_video_off`, `leave`, `signal`, `chat`).
 - The writer sends the queue that the room manager fills, then closes on a `Close` item.
 
 Database work runs in a worker thread with a short session, so it does not block the loop.
@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.db import get_session_factory
 from app.core.errors import AppError
-from app.schemas.ws import Leave, Signal, client_event_adapter
+from app.schemas.ws import Chat, Leave, Signal, client_event_adapter
 from app.services import room_service
 from app.services.room_manager import CLOSE_NORMAL, Close, Connection, room_manager
 from app.services.room_service import Seat
@@ -87,6 +87,10 @@ async def _read_loop(
             )
         elif isinstance(event, Signal):
             error = await _with_db(open_db, room_service.relay_signal, seat, event)
+            if error is not None:
+                conn.push(error)
+        elif isinstance(event, Chat):
+            error = await _with_db(open_db, room_service.send_chat, seat, event)
             if error is not None:
                 conn.push(error)
         else:

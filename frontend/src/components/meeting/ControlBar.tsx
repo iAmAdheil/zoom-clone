@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { MenuItem, Popover } from "@/components/ui/Popover";
+import { unreadBadge } from "@/lib/chat";
 import { ControlButton } from "./ControlButton";
 import { SplitControl, type MenuAction, type MenuGroup } from "./SplitControl";
 
@@ -53,7 +54,7 @@ export function ControlBar(props: ControlBarProps) {
   const toggle = (m: Exclude<Menu, null>) => setMenu((cur) => (cur === m ? null : m));
 
   const reactionRow = (
-    <div className="flex gap-1 p-2">
+    <div className="flex gap-0.5 p-1">
       {REACTIONS.map((emoji) => (
         <button
           key={emoji}
@@ -63,7 +64,7 @@ export function ControlBar(props: ControlBarProps) {
             props.onReact(emoji);
             close();
           }}
-          className="flex size-10 items-center justify-center rounded-md text-2xl transition-transform hover:scale-110 hover:bg-room-hover"
+          className="flex size-10 shrink-0 items-center justify-center rounded-md text-2xl transition-transform hover:scale-110 hover:bg-room-hover"
         >
           {emoji}
         </button>
@@ -128,6 +129,8 @@ export function ControlBar(props: ControlBarProps) {
         <ControlButton
           icon="users"
           label="Participants"
+          // The name starts with the word, then the count ("Participants, 3"). The badge is only for the eyes.
+          aria-label={`Participants, ${participantCount}`}
           badge={participantCount}
           active={panel === "participants"}
           aria-pressed={panel === "participants"}
@@ -137,7 +140,8 @@ export function ControlBar(props: ControlBarProps) {
         <ControlButton
           icon="chat"
           label="Chat"
-          badge={unreadChat > 0 ? unreadChat : undefined}
+          aria-label={unreadChat > 0 ? `Chat, ${unreadChat} unread` : "Chat"}
+          badge={unreadBadge(unreadChat) ?? undefined}
           active={panel === "chat"}
           aria-pressed={panel === "chat"}
           onClick={() => props.onTogglePanel("chat")}
@@ -173,7 +177,7 @@ export function ControlBar(props: ControlBarProps) {
           label="More"
           tone="dark"
           placement="top-end"
-          panelClassName="w-60 p-1.5"
+          panelClassName="w-[17.5rem] max-w-[calc(100vw-16px)] p-1.5"
           trigger={
             <ControlButton icon="more" label="More" aria-expanded={menu === "more"} onClick={() => toggle("more")} />
           }
@@ -208,7 +212,7 @@ export function ControlBar(props: ControlBarProps) {
             type="button"
             aria-expanded={menu === "leave"}
             onClick={() => toggle("leave")}
-            className="h-9 rounded-md bg-danger px-3 text-sm font-bold text-white transition-colors hover:bg-danger-hover sm:px-4"
+            className="h-10 rounded-md bg-danger px-3 text-sm font-bold text-white transition-colors hover:bg-danger-hover sm:h-9 sm:px-4"
           >
             {isHost ? "End" : "Leave"}
           </button>
@@ -234,7 +238,7 @@ export function ControlBar(props: ControlBarProps) {
           <button
             type="button"
             onClick={close}
-            className="h-9 rounded-md text-sm text-room-muted transition-colors hover:text-room-text"
+            className="h-10 rounded-md text-sm text-room-muted transition-colors hover:text-room-text"
           >
             Cancel
           </button>

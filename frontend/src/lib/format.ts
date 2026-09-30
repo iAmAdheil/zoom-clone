@@ -1,4 +1,4 @@
-import type { MeetingAccess } from "./types";
+import type { Meeting, MeetingAccess } from "./types";
 
 // Date formatters. With no `timeZone` they use the browser time zone.
 // Only client components call them, after the data loads, so the server never prints a time.
@@ -8,6 +8,15 @@ export function formatMeetingCode(code: string): string {
   const d = code.replace(/\D/g, "");
   if (d.length !== 10) return d;
   return `${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7)}`;
+}
+
+/**
+ * The passcode line of the meeting info. Only the host gets the value from the API.
+ * Everyone else gets `requires_passcode`, so they see "Required" and never the value.
+ */
+export function passcodeText(meeting: Pick<Meeting, "passcode" | "requires_passcode">): string {
+  if (meeting.passcode) return meeting.passcode;
+  return meeting.requires_passcode ? "Required" : "None";
 }
 
 const TIME: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };

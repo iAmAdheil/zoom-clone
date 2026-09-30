@@ -9,8 +9,9 @@ import { parseSignal, type SendSignal, type SignalData } from "./signaling";
 //    were already in the room call the new client.
 // 3. Tie: when two clients send `hello` to each other at the same time, the lower id calls.
 //    When two offers cross (glare), the offer of the lower id wins.
-// The server sends `participant_joined` at REST join time, before the new socket is open, so a
-// signal sent then fails with `bad_target`. That is why the new client says `hello` first.
+// The server sends `participant_joined` when the new socket opens (not at REST join time), so
+// the new client can already get a signal at that point. The `hello` step stays: it is safe, it
+// also covers a reconnect, and it lets the new client decide who calls whom.
 
 export type PeerStatus = "connecting" | "connected" | "problem";
 export type SignalQuality = "good" | "fair" | "poor";
