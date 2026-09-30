@@ -9,7 +9,7 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Zoom clone",
+  title: { default: "Zoom clone", template: "%s - Zoom clone" },
   description: "Video meetings in the browser: instant and scheduled meetings, join by ID or link.",
 };
 

@@ -4,7 +4,7 @@ import { PortalShell } from "@/components/layout/PortalShell";
 import { ScheduleForm } from "@/components/schedule/ScheduleForm";
 import { Icon } from "@/components/ui/Icon";
 
-export const metadata: Metadata = { title: "Schedule Meeting - Zoom clone" };
+export const metadata: Metadata = { title: "Schedule a meeting" };
 
 export default function SchedulePage() {
   return (
@@ -12,7 +12,7 @@ export default function SchedulePage() {
       <div className="px-4 py-6 sm:px-8 sm:py-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-primary"
+          className="inline-flex items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-primary max-sm:min-h-10"
         >
           <Icon name="chevronLeft" size={16} /> Back to Home
         </Link>

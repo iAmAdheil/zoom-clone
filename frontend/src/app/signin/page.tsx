@@ -4,7 +4,7 @@ import { SimpleShell } from "@/components/layout/SimpleShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { safeNext } from "@/lib/redirects";
 
-export const metadata: Metadata = { title: "Sign in - Zoom clone" };
+export const metadata: Metadata = { title: "Sign in" };
 
 /** `?next=/path` brings the user back to that page after sign in. */
 export default async function SignInPage({ searchParams }: PageProps<"/signin">) {

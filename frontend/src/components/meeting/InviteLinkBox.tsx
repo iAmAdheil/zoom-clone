@@ -38,14 +38,14 @@ export function InviteLinkBox({ meeting, onCopied, tone = "dark" }: InviteLinkBo
         <button
           type="button"
           onClick={() => copy(meeting.invite_link, "Invite link")}
-          className={`inline-flex items-center gap-1.5 rounded-sm ${linkClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-sm max-sm:min-h-10 ${linkClass}`}
         >
           <Icon name="copy" size={16} /> Copy Link
         </button>
         <button
           type="button"
           onClick={() => copy(invitation, "Invitation")}
-          className={`inline-flex items-center gap-1.5 rounded-sm ${linkClass}`}
+          className={`inline-flex items-center gap-1.5 rounded-sm max-sm:min-h-10 ${linkClass}`}
         >
           <Icon name="link" size={16} /> Copy Invitation
         </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/cn";
 import type { Participant } from "@/lib/types";
 import type { PeerSnapshot } from "@/lib/webrtc/peerManager";
 import { ParticipantTile } from "./ParticipantTile";
@@ -55,9 +56,12 @@ export function VideoGrid({ participants, selfId, speakerId, selfStream, peers, 
   }, []);
 
   const tile = bestTileSize(participants.length, box, aspect);
+  // On a phone the room shows me as a floating tile (96 x 128 px, 12 px from the corner) and
+  // leaves me out of this list. Keep the bottom band free, so the tile never covers a name tag.
+  const selfFloats = aspect === 1 && !participants.some((p) => p.id === selfId);
 
   return (
-    <div ref={boxRef} className="absolute inset-2 sm:inset-3">
+    <div ref={boxRef} className={cn("absolute inset-2 sm:inset-3", selfFloats && "pb-33")}>
       <div className="flex size-full flex-wrap content-center items-center justify-center" style={{ gap: GAP }}>
         {participants.map((p) => (
           <ParticipantTile

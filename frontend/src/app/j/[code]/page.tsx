@@ -4,7 +4,7 @@ import { SimpleShell } from "@/components/layout/SimpleShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { queryText } from "@/lib/inviteLink";
 
-export const metadata: Metadata = { title: "Join Meeting - Zoom clone" };
+export const metadata: Metadata = { title: "Join a meeting" };
 
 /** Invite link route: the join form with the meeting ID filled in. `?pwd=` fills the passcode. */
 export default async function InviteLinkPage({ params, searchParams }: PageProps<"/j/[code]">) {

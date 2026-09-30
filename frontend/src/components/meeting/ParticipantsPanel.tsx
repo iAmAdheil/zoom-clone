@@ -37,7 +37,7 @@ function roleLabel(p: Participant, isSelf: boolean) {
 }
 
 const rowAction =
-  "h-7 rounded-md border border-line-strong bg-surface px-2.5 text-xs font-bold text-ink transition-colors hover:bg-surface-hover";
+  "h-7 max-sm:h-10 max-sm:min-w-10 rounded-md border border-line-strong bg-surface px-2.5 text-xs font-bold text-ink transition-colors hover:bg-surface-hover";
 
 export function ParticipantsPanel(props: ParticipantsPanelProps) {
   const { meeting, participants, selfId, isHost, allowSelfUnmute, onClose, onNotify } = props;
@@ -133,7 +133,7 @@ export function ParticipantsPanel(props: ParticipantsPanelProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"
-            className="h-8 w-full rounded-md border border-line bg-surface-muted pr-2 pl-8 text-sm placeholder:text-ink-subtle focus:border-primary focus:bg-surface focus:outline-none"
+            className="h-8 max-sm:h-10 w-full rounded-md border border-line bg-surface-muted pr-2 pl-8 text-sm placeholder:text-ink-subtle focus:border-primary focus:bg-surface focus:outline-none"
           />
         </label>
       </div>

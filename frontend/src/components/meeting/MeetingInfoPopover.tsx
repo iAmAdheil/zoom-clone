@@ -35,7 +35,7 @@ export function MeetingInfoPopover({ meeting, onCopied }: MeetingInfoPopoverProp
           aria-haspopup="dialog"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center rounded-md p-1.5 text-success transition-colors hover:bg-room-hover"
+          className="flex size-8 items-center justify-center rounded-md text-success transition-colors hover:bg-room-hover max-sm:size-10"
         >
           <Icon name="shield" size={20} strokeWidth={2} />
         </button>

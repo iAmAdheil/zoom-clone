@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Check, Field, TextInput } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
@@ -16,25 +16,32 @@ import { JoinAlert, describeJoinError } from "./joinErrors";
 
 type Errors = { code?: string; name?: string; passcode?: string; form?: string };
 
-// The remembered name lives in localStorage. The server render uses "" and the browser
-// fills it in after hydration, so the two renders match.
-const noSubscribe = () => () => {};
-
 type JoinFormProps = { initialCode?: string; initialPasscode?: string };
 
 export function JoinForm({ initialCode = "", initialPasscode = "" }: JoinFormProps) {
   const router = useRouter();
-  const { data: me } = useMe();
-  const savedName = useSyncExternalStore(noSubscribe, rememberedName.read, () => "");
+  const { data: me, isLoading: meLoading } = useMe();
   const [codeInput, setCodeInput] = useState(initialCode ? formatMeetingCode(initialCode) : "");
-  const [nameDraft, setNameDraft] = useState<string | null>(null);
+  // The name field state is the one source of truth: the field shows it, and Join reads it.
+  const [name, setName] = useState("");
+  const nameTouched = useRef(false);
   const [passcode, setPasscode] = useState(initialPasscode);
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<Errors>({});
   const [navigating, setNavigating] = useState(false);
   const joiner = useJoinMeeting();
 
-  const name = nameDraft ?? (me?.name || savedName);
+
+  // Prefill before the browser paints: the signed-in user first, then the remembered name.
+  // The server render has no user and no localStorage, so the first render has "". A layout
+  // effect runs before the first paint, so the field never shows empty and then filled.
+  // Once the user types, we do not replace the text.
+  useLayoutEffect(() => {
+    if (nameTouched.current) return;
+    const prefill = me?.name || rememberedName.read();
+    setName(prefill);
+  }, [me?.name]);
+
   const code = parseJoinInput(codeInput).code;
   // GET /api/meetings/{code} runs as soon as the ID has 10 digits.
   const lookup = useMeetingLookup(code.length === 10 ? code : null);
@@ -143,7 +150,8 @@ export function JoinForm({ initialCode = "", initialPasscode = "" }: JoinFormPro
           maxLength={64}
           value={name}
           onChange={(e) => {
-            setNameDraft(e.target.value);
+            nameTouched.current = true;
+            setName(e.target.value);
             setErrors((prev) => ({ ...prev, name: undefined }));
           }}
           aria-invalid={errors.name ? true : undefined}
@@ -189,7 +197,7 @@ export function JoinForm({ initialCode = "", initialPasscode = "" }: JoinFormPro
         <JoinAlert message={formError} signInNext={joinError?.needsSignIn ? `/j/${code}` : undefined} />
       ) : null}
 
-      <Button type="submit" size="lg" block disabled={!codeInput.trim() || busy}>
+      <Button type="submit" size="lg" block disabled={!codeInput.trim() || busy || meLoading}>
         {busy ? "Joining..." : "Join"}
       </Button>
 

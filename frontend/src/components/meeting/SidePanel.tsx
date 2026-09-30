@@ -31,7 +31,7 @@ export function SidePanel({ title, onClose, children, footer }: SidePanelProps) 
             type="button"
             onClick={onClose}
             aria-label={`Close ${title}`}
-            className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            className="inline-flex size-8 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink max-sm:size-10"
           >
             <Icon name="close" size={18} />
           </button>

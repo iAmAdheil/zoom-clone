@@ -65,7 +65,7 @@ export function ChatPanel({ messages, selfName, onSend, onClose }: ChatPanelProp
               type="submit"
               aria-label="Send message"
               disabled={!draft.trim()}
-              className="rounded-md p-1.5 text-primary transition-colors hover:bg-primary-soft disabled:text-ink-subtle disabled:hover:bg-transparent"
+              className="inline-flex size-8 items-center justify-center rounded-md text-primary transition-colors hover:bg-primary-soft disabled:text-ink-subtle disabled:hover:bg-transparent max-sm:size-10"
             >
               <Icon name="send" size={18} />
             </button>
