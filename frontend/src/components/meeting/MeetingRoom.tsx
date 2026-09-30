@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Check } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
@@ -8,26 +8,34 @@ import { Toast } from "@/components/ui/Toast";
 import { copyText, useMediaQuery, useToast } from "@/lib/hooks";
 import type { ChatMessage, Meeting } from "@/lib/types";
 import { useRoom } from "@/lib/useRoom";
+import { useTrackToggles, type LocalMedia } from "@/lib/webrtc/useMedia";
+import { usePeers } from "@/lib/webrtc/usePeers";
 import { ChatPanel } from "./ChatPanel";
 import { ControlBar, type Panel } from "./ControlBar";
 import { ParticipantsPanel } from "./ParticipantsPanel";
 import { ParticipantTile } from "./ParticipantTile";
 import { RoomExitNotice } from "./RoomExitNotice";
 import { RoomTopBar } from "./RoomTopBar";
-import { useLocalCamera, useLocalMedia } from "./useLocalMedia";
+import { RemoteAudio } from "./VideoFeed";
 import { VideoGrid } from "./VideoGrid";
 
 type MeetingRoomProps = {
   code: string;
   meeting: Meeting;
+  /** The camera and microphone from the pre-join preview. The room never opens them again. */
+  media: LocalMedia;
   /** The host ended the meeting for everyone (the REST call worked). */
   onEndedForAll: () => void;
+  /** False when the server closed the room (removed, ended, lost). The parent then stops the devices. */
+  onActiveChange: (active: boolean) => void;
 };
 
 /** Dark meeting room: top bar, gallery, toolbar, side panel and host dialogs. */
-export function MeetingRoom({ code, meeting, onEndedForAll }: MeetingRoomProps) {
+export function MeetingRoom({ code, meeting, media, onEndedForAll, onActiveChange }: MeetingRoomProps) {
   const toast = useToast(3500);
-  const { participants, me, status, actions } = useRoom(code, toast.show);
+  const room = useRoom(code, toast.show);
+  const { participants, me, status, actions } = room;
+  const peers = usePeers(room, media.stream);
 
   const [panel, setPanel] = useState<Panel>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -42,12 +50,15 @@ export function MeetingRoom({ code, meeting, onEndedForAll }: MeetingRoomProps) 
   const isPhone = useMediaQuery("(max-width: 639px)");
 
   // The server state drives the real tracks: a host mute also stops my microphone.
-  // When the room closes (removed, ended, lost), both devices are released.
+  // When the room closes (removed, ended, lost), the parent releases both devices.
   const inRoom = status === "connecting" || status === "live" || status === "reconnecting";
   const micOn = me ? !me.is_muted : false;
   const camOn = me ? !me.is_video_off : false;
-  const camera = useLocalCamera(inRoom && camOn);
-  useLocalMedia("audio", inRoom && micOn);
+  useTrackToggles(media.stream, micOn, camOn);
+  const reportActive = useEffectEvent(onActiveChange);
+  useEffect(() => {
+    reportActive(inRoom);
+  }, [inRoom]);
 
   if (!me) return null;
 
@@ -122,11 +133,16 @@ export function MeetingRoom({ code, meeting, onEndedForAll }: MeetingRoomProps) 
         <RoomTopBar meeting={meeting} onCopied={toast.show} />
 
         <div className="relative min-h-0 flex-1">
+          {/* The sound of each remote participant. It plays even when their video is off. */}
+          {[...peers.streams].map(([id, stream]) => (
+            <RemoteAudio key={id} stream={stream} participantId={id} />
+          ))}
           <VideoGrid
             participants={gridPeople}
             selfId={selfId}
             speakerId={null}
-            selfStream={camera.stream}
+            selfStream={media.stream}
+            peers={peers}
             reaction={reaction}
             aspect={isPhone ? 1 : 16 / 9}
           />
@@ -137,7 +153,7 @@ export function MeetingRoom({ code, meeting, onEndedForAll }: MeetingRoomProps) 
                 participant={me}
                 isSelf
                 speaking={false}
-                stream={camera.stream}
+                stream={media.stream}
                 reaction={reaction}
                 className="size-full"
               />
@@ -162,8 +178,8 @@ export function MeetingRoom({ code, meeting, onEndedForAll }: MeetingRoomProps) 
           panelOpen={panel !== null}
           unreadChat={unread}
           isHost={isHost}
-          onToggleMic={() => actions.setMuted(micOn)}
-          onToggleCam={() => actions.setVideoOff(camOn)}
+          onToggleMic={() => (micOn || media.hasAudio ? actions.setMuted(micOn) : toast.show("No microphone is available"))}
+          onToggleCam={() => (camOn || media.hasVideo ? actions.setVideoOff(camOn) : toast.show("No camera is available"))}
           onTogglePanel={togglePanel}
           onReact={(emoji) => setReaction({ emoji, key: Date.now() })}
           onShare={() => toast.show("Screen sharing is not available yet")}

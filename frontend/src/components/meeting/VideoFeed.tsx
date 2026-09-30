@@ -1,33 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/cn";
 
-const tones = ["bg-feed-1", "bg-feed-2", "bg-feed-3", "bg-feed-4", "bg-feed-5", "bg-feed-6"];
-
-/** Mock "camera on" picture: a toned backdrop with a head-and-shoulders shape. */
-export function FeedPlaceholder({ seed, className }: { seed: number; className?: string }) {
-  return (
-    <div className={cn("absolute inset-0 overflow-hidden", tones[seed % tones.length], className)}>
-      <div className="absolute inset-0 bg-linear-to-b from-white/10 to-black/30" />
-      <svg
-        viewBox="0 0 160 90"
-        preserveAspectRatio="xMidYMax meet"
-        className="absolute inset-x-0 bottom-0 h-[82%] w-full text-white/25"
-        aria-hidden="true"
-      >
-        <circle cx="80" cy="36" r="17" fill="currentColor" />
-        <path d="M44 90c2-20 17-31 36-31s34 11 36 31z" fill="currentColor" />
-      </svg>
-    </div>
-  );
-}
-
-/** Live local camera, mirrored like a self view. */
-export function LiveVideo({ stream, className }: { stream: MediaStream; className?: string }) {
+/**
+ * The picture of a stream. It never plays sound: the self view must not echo my own voice,
+ * and the sound of a remote stream plays in RemoteAudio, which stays on when the video is off.
+ * `mirror` flips the self view, like a mirror.
+ */
+export function LiveVideo({ stream, mirror = false, className }: { stream: MediaStream; mirror?: boolean; className?: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
-    if (ref.current) ref.current.srcObject = stream;
+    const video = ref.current;
+    if (!video) return;
+    video.muted = true;
+    video.srcObject = stream;
   }, [stream]);
   return (
     <video
@@ -35,7 +23,30 @@ export function LiveVideo({ stream, className }: { stream: MediaStream; classNam
       autoPlay
       playsInline
       muted
-      className={cn("absolute inset-0 size-full -scale-x-100 object-cover", className)}
+      className={cn("absolute inset-0 size-full object-cover", mirror && "-scale-x-100", className)}
     />
+  );
+}
+
+/** Plays the sound of one remote participant. Hidden. */
+export function RemoteAudio({ stream, participantId }: { stream: MediaStream; participantId: number }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  useEffect(() => {
+    const audio = ref.current;
+    if (!audio) return;
+    audio.srcObject = stream;
+    // The user clicked Join on this page, so the browser allows sound. Ignore a refusal.
+    audio.play().catch(() => {});
+  }, [stream]);
+  return <audio ref={ref} autoPlay data-participant-id={participantId} className="hidden" />;
+}
+
+/** The tile content when there is no picture: the avatar and the name. */
+export function TileAvatar({ name, className }: { name: string; className?: string }) {
+  return (
+    <div className={cn("absolute inset-0 flex flex-col items-center justify-center gap-2 px-3", className)}>
+      <Avatar name={name} size="tile" />
+      <p className="max-w-full truncate text-center text-[clamp(12px,5cqw,20px)] font-bold text-room-text">{name}</p>
+    </div>
   );
 }
