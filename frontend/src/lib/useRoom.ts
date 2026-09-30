@@ -150,6 +150,7 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
         return;
       default:
         // you_were_removed and meeting_ended change the status (see RoomSocket).
+        // signal is for WebRTC, which the room does not use yet.
         return;
     }
   });

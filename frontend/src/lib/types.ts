@@ -101,13 +101,16 @@ export type JoinResult = {
 
 /** A message from the server. Each one has a `type` field. */
 export type ServerEvent =
-  | { type: "snapshot"; participants: Participant[] }
+  /** `connected_ids`: participants with an open socket now (for WebRTC later). */
+  | { type: "snapshot"; participants: Participant[]; connected_ids: number[] }
   | { type: "participant_joined"; participant: Participant }
   | { type: "participant_left"; participant_id: number }
   | { type: "participant_updated"; participant: Participant }
   | { type: "mute_all"; participant_ids: number[] }
   | { type: "you_were_removed"; participant_id: number }
   | { type: "meeting_ended" }
+  /** WebRTC relay. The room does not use it yet. */
+  | { type: "signal"; from: number; data: Record<string, unknown> }
   | { type: "error"; code: string; detail: string };
 
 /** A message to the server. */
