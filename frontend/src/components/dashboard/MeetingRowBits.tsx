@@ -38,7 +38,7 @@ export function CopyInviteButton({ meeting, onCopied }: CopyInviteButtonProps) {
       onClick={copy}
       aria-label={`Copy invite link for ${meeting.title}`}
       title="Copy invite link"
-      className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface-hover hover:text-primary"
+      className="inline-flex size-8 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-hover hover:text-primary max-sm:size-10"
     >
       <Icon name="copy" size={18} />
     </button>

@@ -77,7 +77,7 @@ export function MenuItem({ children, onSelect, tone = "light", danger }: MenuIte
       type="button"
       onClick={onSelect}
       className={cn(
-        "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors",
+        "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm max-sm:min-h-10 transition-colors",
         tone === "light" ? "hover:bg-surface-hover" : "hover:bg-room-hover",
         danger ? "text-danger" : tone === "light" ? "text-ink" : "text-room-text",
       )}

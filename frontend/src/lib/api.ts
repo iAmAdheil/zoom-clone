@@ -10,6 +10,7 @@ import type {
   ScheduleMeetingInput,
   User,
 } from "./types";
+import { safeNext } from "./redirects";
 
 // The one place that talks to the backend. The browser calls /api/* on its own origin,
 // and next.config.ts forwards the call to FastAPI. See docs/api.md for each endpoint.
@@ -69,10 +70,11 @@ const code = (meetingCode: string) => encodeURIComponent(meetingCode.replace(/\D
 export const api = {
   // ---- auth ----
   /** Full-page URL. The backend redirects to Google, then back to `next`. */
-  googleLoginUrl: (next: string) => `/api/auth/google/login?next=${encodeURIComponent(next)}`,
+  googleLoginUrl: (next: string) => `/api/auth/google/login?next=${encodeURIComponent(safeNext(next))}`,
   demoLogin: () => post<User>("/auth/demo"),
   logout: () => post<void>("/auth/logout"),
-  me: () => request<User>("/me"),
+  /** `null` for a guest: app/api/me/route.ts answers 200 with null instead of 401. */
+  me: () => request<User | null>("/me"),
 
   // ---- meetings ----
   createInstant: (input: InstantMeetingInput = {}) => post<Meeting>("/meetings/instant", input),

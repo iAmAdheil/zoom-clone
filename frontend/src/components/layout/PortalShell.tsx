@@ -88,7 +88,7 @@ function PortalFrame({ children }: { children: ReactNode }) {
                 type="button"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close navigation"
-                className="rounded-md p-2 text-ink-muted hover:bg-surface-hover"
+                className="inline-flex size-10 items-center justify-center rounded-md text-ink-muted hover:bg-surface-hover"
               >
                 <Icon name="close" size={20} />
               </button>

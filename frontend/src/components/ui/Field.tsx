@@ -72,16 +72,43 @@ type CheckProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
   type?: "checkbox" | "radio";
 };
 
-/** Checkbox or radio with a label and an optional description line. */
+/**
+ * Checkbox or radio with a label and an optional description line.
+ * The real input is invisible and covers a 16 px drawn box. On a phone the input grows to
+ * 40 x 40 px (a negative margin keeps the layout the same), so it is easy to tap.
+ */
 export function Check({ label, description, type = "checkbox", className, id, ...rest }: CheckProps) {
+  const round = type === "radio";
   return (
     <label htmlFor={id} className={cn("flex cursor-pointer items-start gap-2.5 text-sm", className)}>
-      <input
-        id={id}
-        type={type}
-        className="mt-0.5 size-4 shrink-0 cursor-pointer accent-primary"
-        {...rest}
-      />
+      <span className="relative mt-0.5 flex size-4 shrink-0 items-center justify-center max-sm:-m-3 max-sm:size-10">
+        <input
+          id={id}
+          type={type}
+          className="peer absolute inset-0 z-10 m-0 size-full cursor-pointer opacity-0 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed"
+          {...rest}
+        />
+        <span
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none size-4 border border-line-strong bg-surface transition-colors peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-1 peer-disabled:opacity-50",
+            round ? "rounded-full" : "rounded-sm",
+          )}
+        />
+        {round ? (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute size-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100"
+          />
+        ) : (
+          <Icon
+            name="check"
+            size={12}
+            strokeWidth={3}
+            className="pointer-events-none absolute text-white opacity-0 peer-checked:opacity-100"
+          />
+        )}
+      </span>
       <span className="flex flex-col gap-0.5">
         <span className="text-ink">{label}</span>
         {description ? <span className="text-xs text-ink-muted">{description}</span> : null}

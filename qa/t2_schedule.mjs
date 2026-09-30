@@ -84,20 +84,29 @@ await fill({ topic: "QA zero", date: dayStr(tomorrow), hours: 0, minutes: 0 });
 text = await submit();
 check("schedule: duration 0 is refused", /at least/i.test(text), { msg: text.match(/.*at least.*/i)?.[0] });
 
-// Very long duration: 24 h 45 min = 1485 min (API max is 1440).
+// Very long duration: 24 h 45 min = 1485 min (API max is 1440). The form must not offer it (BUG-08).
 await openForm();
-await fill({ topic: "QA long", date: dayStr(tomorrow), hours: 24, minutes: 45 });
-text = await submit();
-const longSaved = (await upcoming()).find((x) => x.title === "QA long");
+await page.getByLabel("Hours").selectOption("24");
+const minuteOptions = await page.getByLabel("Minutes").locator("option").allInnerTexts();
+check("schedule: at 24 hr the Minutes picker offers only 0", minuteOptions.join(",") === "0", { minuteOptions });
+// A server refusal shows a friendly text, not the Pydantic text. The route forces the server answer.
+await fill({ topic: "QA server error", date: dayStr(tomorrow), hours: 24, minutes: 0 });
+await page.route("**/api/meetings", (r) =>
+  r.request().method() === "POST"
+    ? r.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ detail: "duration_min: Input should be less than or equal to 1440", code: "validation_error" }) })
+    : r.continue(),
+);
+await submit();
 const durationMsg = await page.locator("#duration-msg").innerText().catch(() => "");
-const alertMsg = await page.locator("[role=alert]").allInnerTexts();
-check("schedule: duration 24h45m (over the 1440 min limit) gives a clear message next to Duration", !longSaved && durationMsg.length > 0 && !/validation|less than or equal/i.test(durationMsg), {
-  saved: !!longSaved,
-  durationMsg,
-  alerts: alertMsg,
-});
+check("schedule: a server validation error shows a friendly message next to Duration", durationMsg.length > 0 && !/validation|less than or equal|duration_min/i.test(durationMsg), { durationMsg });
+await page.route("**/api/meetings", (r) =>
+  r.request().method() === "POST" ? r.fulfill({ status: 500, contentType: "text/plain", body: "Internal Server Error" }) : r.continue(),
+);
+await submit();
+const formMsg = await page.locator("form [role=alert]").allInnerTexts();
+check("schedule: a server 500 shows a friendly message", formMsg.some((m) => /could not be saved/i.test(m)), { formMsg });
 await shot(page, "schedule-error-long-duration-1440.png");
-if (longSaved) made.push(longSaved);
+await page.unroute("**/api/meetings");
 
 // 24 h exactly works?
 await openForm();

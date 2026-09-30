@@ -36,7 +36,7 @@ export function PortalHeader({ onMenu }: PortalHeaderProps) {
         type="button"
         onClick={onMenu}
         aria-label="Open navigation"
-        className="rounded-md p-2 text-ink-2 hover:bg-surface-hover lg:hidden"
+        className="inline-flex size-10 items-center justify-center rounded-md text-ink-2 hover:bg-surface-hover lg:hidden"
       >
         <Icon name="menu" size={22} />
       </button>
@@ -62,7 +62,7 @@ export function PortalHeader({ onMenu }: PortalHeaderProps) {
           type="button"
           aria-label="Settings (not available yet)"
           title="Settings"
-          className="rounded-full p-2 text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+          className="inline-flex size-10 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
         >
           <Icon name="settings" size={20} />
         </button>
@@ -80,7 +80,7 @@ export function PortalHeader({ onMenu }: PortalHeaderProps) {
               aria-expanded={menuOpen}
               aria-label={`Profile: ${user.name}`}
               onClick={() => setMenuOpen((v) => !v)}
-              className="ml-1 rounded-full"
+              className="ml-1 rounded-full max-sm:p-1"
             >
               <Avatar name={user.name} src={user.avatar_url} size="sm" />
             </button>

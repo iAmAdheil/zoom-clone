@@ -8,6 +8,9 @@
  * The default Tailwind palette is removed (--color-*: initial), so a component
  * can only use the colors below. Values come from the Zoom web client and the
  * Zoom web portal screens listed in DESIGN_NOTES.md.
+ *
+ * WCAG AA (BUG-14): text pairs have at least 4.5:1, and icons on a color have at least 3:1.
+ * Some values are a little darker than the Zoom original for this reason. Do not lighten them.
  */
 @theme {
   /* Remove the default Tailwind palette. */
@@ -18,25 +21,25 @@
   --color-transparent: transparent;
 
   /* Brand and actions */
-  --color-primary: #0e72ed;
-  --color-primary-hover: #0b63d1;
-  --color-primary-active: #0955b5;
+  --color-primary: #0d69da;
+  --color-primary-hover: #0a5bc4;
+  --color-primary-active: #0850ab;
   --color-primary-soft: #e8f1fd;
-  --color-accent: #ff742e; /* New Meeting tile */
-  --color-accent-hover: #f2641c;
-  --color-danger: #e02828; /* Leave / End, muted mic */
-  --color-danger-hover: #c41f1f;
+  --color-accent: #ed6c2b; /* New Meeting tile */
+  --color-accent-hover: #d95f20;
+  --color-danger: #d02525; /* Leave / End, muted mic */
+  --color-danger-hover: #b51c1c;
   --color-danger-soft: #fdecec;
-  --color-success: #0fb35c; /* Share Screen, unmuted mic */
-  --color-success-hover: #0c9c50;
+  --color-success: #0ea856; /* Share Screen, unmuted mic */
+  --color-success-hover: #0b8e48;
   --color-warning-soft: #fff4e5;
   --color-warning-ink: #8a4b00;
 
   /* Light surfaces (portal, sign in, forms) */
   --color-ink: #232333;
   --color-ink-2: #39394d;
-  --color-ink-muted: #747487;
-  --color-ink-subtle: #9999aa;
+  --color-ink-muted: #666678;
+  --color-ink-subtle: #70707c;
   --color-surface: #ffffff;
   --color-surface-muted: #f7f7fa;
   --color-surface-hover: #f1f4f9;
@@ -69,10 +72,10 @@
   /* Avatar backgrounds */
   --color-avatar-1: #0e72ed;
   --color-avatar-2: #7c4dff;
-  --color-avatar-3: #00a39e;
-  --color-avatar-4: #f25c05;
+  --color-avatar-3: #008480;
+  --color-avatar-4: #cb4d04;
   --color-avatar-5: #d6336c;
-  --color-avatar-6: #3f8f29;
+  --color-avatar-6: #3b8526;
 
   /* Fonts */
   --font-sans: var(--font-lato), "Helvetica Neue", Helvetica, Arial, sans-serif;

@@ -6,11 +6,12 @@ import path from "node:path";
 
 export const QA_DIR = import.meta.dirname;
 export const ROOT = path.resolve(QA_DIR, "..");
-export const SHOTS = path.join(ROOT, "docs/qa");
-export const RESULTS = path.join(ROOT, "docs/qa/results");
-export const FE = "http://localhost:3000";
-export const BE = "http://localhost:8000";
-export const WS = "ws://localhost:8000";
+// QA_OUT: write screenshots and results to another folder, so a re-run does not replace the committed evidence.
+export const SHOTS = process.env.QA_OUT ?? path.join(ROOT, "docs/qa");
+export const RESULTS = process.env.QA_OUT ? path.join(process.env.QA_OUT, "results") : path.join(ROOT, "docs/qa/results");
+export const FE = process.env.QA_FE ?? "http://localhost:3000";
+export const BE = process.env.QA_BE ?? "http://localhost:8000";
+export const WS = BE.replace(/^http/, "ws");
 // Playwright 1.60 expects chromium-1223. This machine has chromium-1243 only.
 export const CHROME =
   process.env.QA_CHROME ??

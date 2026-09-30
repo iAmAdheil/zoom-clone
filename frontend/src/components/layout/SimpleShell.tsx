@@ -15,7 +15,7 @@ export function SimpleShell({ children, headerRight }: SimpleShellProps) {
       <main className="flex flex-1 flex-col">{children}</main>
       <footer className="px-4 py-6 text-center text-xs text-ink-muted">
         © 2026 Zoom clone. Not affiliated with Zoom Video Communications.{" "}
-        <Link href="/signin" className="rounded-sm underline hover:text-ink">
+        <Link href="/signin" className="rounded-sm underline hover:text-ink max-sm:mt-1 max-sm:flex max-sm:min-h-10 max-sm:items-center max-sm:justify-center">
           Privacy &amp; Legal Policies
         </Link>
       </footer>

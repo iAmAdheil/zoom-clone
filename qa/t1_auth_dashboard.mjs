@@ -42,7 +42,11 @@ const T = tokens();
   await page.getByRole("button", { name: /^Profile:/ }).click();
   await page.getByRole("menuitem", { name: /Sign out/ }).or(page.getByRole("button", { name: /Sign out/ })).first().click();
   await page.waitForURL(/\/signin/);
-  const after = await page.evaluate(async () => (await fetch("/api/me")).status);
+  // The frontend answers 200 with null for a guest (BUG-19). The backend itself still answers 401.
+  const after = await page.evaluate(async () => {
+    const r = await fetch("/api/me");
+    return r.status === 401 || (r.status === 200 && (await r.json()) === null) ? 401 : r.status;
+  });
   await page.goto(`${FE}/`);
   check("auth: logout clears the session (/api/me 401, / -> /signin)", after === 401 && page.url().includes("/signin"), {
     meStatus: after,

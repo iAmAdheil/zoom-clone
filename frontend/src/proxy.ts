@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { safeNext } from "@/lib/redirects";
 
 // Optimistic auth check (see the Next.js authentication guide). With no session cookie, the
 // user goes to /signin at once. The pages still call /api/me, because only the backend can
@@ -8,7 +9,7 @@ export function proxy(request: NextRequest) {
 
   const { pathname, search } = request.nextUrl;
   const signIn = new URL("/signin", request.url);
-  signIn.searchParams.set("next", `${pathname}${search}`);
+  signIn.searchParams.set("next", safeNext(`${pathname}${search}`));
   return NextResponse.redirect(signIn);
 }
 

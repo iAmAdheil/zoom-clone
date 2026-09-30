@@ -8,6 +8,7 @@ import { Check, Field, TextInput } from "@/components/ui/Field";
 import { GoogleMark, Icon } from "@/components/ui/Icon";
 import { ApiError, api, errorMessage } from "@/lib/api";
 import { keys } from "@/lib/queries";
+import { safeNext } from "@/lib/redirects";
 
 type Pending = "google" | "demo" | null;
 
@@ -45,7 +46,7 @@ export function SignInForm({ next }: { next: string }) {
     try {
       const user = await api.demoLogin();
       await mutate(keys.me, user, { revalidate: false });
-      router.replace(next);
+      router.replace(safeNext(next));
     } catch (caught) {
       setError(
         caught instanceof ApiError && caught.code === "demo_disabled"

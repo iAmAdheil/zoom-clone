@@ -12,7 +12,7 @@ export function Logo({ tone = "brand", size = "md", href = "/", className }: Log
       href={href}
       aria-label="Zoom clone home"
       className={cn(
-        "inline-flex items-center rounded-sm font-black leading-none tracking-tight lowercase",
+        "inline-flex min-h-10 min-w-10 items-center rounded-sm font-black leading-none tracking-tight lowercase",
         tone === "brand" ? "text-primary" : "text-white",
         sizes[size],
         className,

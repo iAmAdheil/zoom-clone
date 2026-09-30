@@ -45,7 +45,7 @@ export function UpcomingCard({ now, meetings, error, onRetry, onCopied }: Upcomi
         <h2 id="upcoming-title" className="text-base font-bold text-ink">
           Upcoming
         </h2>
-        <Link href="/schedule" className="rounded-sm text-sm font-bold text-primary hover:underline">
+        <Link href="/schedule" className="inline-flex items-center rounded-sm text-sm font-bold text-primary hover:underline max-sm:min-h-10">
           Schedule
         </Link>
       </div>

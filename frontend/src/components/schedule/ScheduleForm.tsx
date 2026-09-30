@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Check, Select, TextArea, TextInput } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
-import { ApiError, api, errorMessage } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 import { useUser } from "@/lib/auth";
 import { dayKey } from "@/lib/format";
 import { refreshMeetingLists } from "@/lib/queries";
@@ -71,30 +71,51 @@ function randomPasscode(): string {
   return Array.from(bytes, (b) => chars[b % chars.length]).join("");
 }
 
-// Field names in the backend "validation_error" detail -> the form row that shows the message.
-const FIELD_TO_ROW: Record<string, ErrorKey> = {
-  title: "topic",
-  description: "topic",
-  scheduled_start: "when",
-  duration_min: "duration",
-  timezone: "timezone",
-  passcode: "passcode",
+// The API accepts a duration from 1 minute to 24 hours (backend: 1 <= duration_min <= 1440).
+// The pickers step by 15 minutes, so 24 h allows only 0 min.
+const MAX_HOURS = 24;
+const MINUTE_STEPS = [0, 15, 30, 45];
+
+// Field names in the backend "validation_error" detail -> the form row and a friendly message.
+// The backend text is Pydantic text ("Input should be less than or equal to 1440"). We do not show it.
+const FIELD_ERRORS: Record<string, { row: ErrorKey; message: string }> = {
+  title: { row: "topic", message: "Enter a topic of 1 to 255 characters." },
+  description: { row: "topic", message: "The description is too long. Use up to 5000 characters." },
+  scheduled_start: { row: "when", message: "Pick a valid date and time." },
+  duration_min: { row: "duration", message: "The duration must be from 15 minutes to 24 hours." },
+  timezone: { row: "timezone", message: "Pick a time zone from the list." },
+  passcode: { row: "passcode", message: "Use 1 to 10 letters, numbers or @ * _ -." },
 };
 
-/** Puts a server error next to the field it is about. Other errors go to the top of the form. */
+const GENERIC_SAVE_ERROR = "The meeting could not be saved. Try again.";
+
+/** Puts a server error next to the field it is about, in plain words. Other errors go to the top of the form. */
 function serverErrors(error: unknown): Errors {
-  if (!(error instanceof ApiError)) return { form: errorMessage(error) };
-  if (error.code === "start_in_past") return { when: error.message };
-  if (error.code !== "validation_error") return { form: error.message };
-  // The detail looks like "title: String should have at least 1 character; duration_min: ...".
-  const out: Errors = {};
-  for (const part of error.message.split("; ")) {
-    const [field, ...rest] = part.split(": ");
-    const row = FIELD_TO_ROW[field];
-    if (row && rest.length > 0) out[row] = rest.join(": ");
-    else out.form = out.form ? `${out.form} ${part}` : part;
+  if (!(error instanceof ApiError)) return { form: GENERIC_SAVE_ERROR };
+  switch (error.code) {
+    case "start_in_past":
+      return { when: "Pick a time in the future." };
+    case "network_error":
+      return { form: error.message };
+    case "not_authenticated":
+      return { form: "Your session has ended. Sign in again to save the meeting." };
+    case "meeting_not_editable":
+      return { form: "This meeting can no longer be changed." };
+    case "meeting_not_found":
+      return { form: "This meeting no longer exists." };
+    case "validation_error": {
+      // The detail looks like "title: String should have at least 1 character; duration_min: ...".
+      const out: Errors = {};
+      for (const part of error.message.split("; ")) {
+        const field = FIELD_ERRORS[part.split(": ")[0]];
+        if (field) out[field.row] = field.message;
+        else out.form = "Some details are not valid. Check the form and try again.";
+      }
+      return out;
+    }
+    default:
+      return { form: GENERIC_SAVE_ERROR };
   }
-  return out;
 }
 
 /** The "Schedule Meeting" page of the Zoom web portal, with the access setting from the brief. */
@@ -128,7 +149,9 @@ export function ScheduleForm() {
     if (!topic.trim()) next.topic = "Enter a topic.";
     if (!start || Number.isNaN(start.getTime())) next.when = "Pick a date.";
     else if (start.getTime() <= Date.now()) next.when = "Pick a time in the future.";
-    if (hours * 60 + minutes <= 0) next.duration = "The meeting must be at least 15 minutes.";
+    const total = hours * 60 + minutes;
+    if (total < 15) next.duration = "The meeting must be at least 15 minutes.";
+    else if (total > MAX_HOURS * 60) next.duration = "The meeting can be up to 24 hours long.";
     if (usePasscode && !/^[A-Za-z0-9@*_-]{1,10}$/.test(passcode))
       next.passcode = "Use 1 to 10 letters, numbers or @ * _ -.";
     setErrors(next);
@@ -195,7 +218,7 @@ export function ScheduleForm() {
           <button
             type="button"
             onClick={() => setShowDescription(true)}
-            className="inline-flex w-fit items-center gap-1 rounded-sm text-sm font-bold text-primary hover:underline"
+            className="inline-flex w-fit items-center gap-1 rounded-sm text-sm font-bold text-primary hover:underline max-sm:min-h-10"
           >
             <Icon name="plus" size={16} /> Add Description
           </button>
@@ -240,10 +263,15 @@ export function ScheduleForm() {
             id="duration-hr"
             aria-label="Hours"
             value={hours}
-            onChange={(e) => setHours(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              setHours(value);
+              // 24 hr is the limit, so it cannot have extra minutes.
+              if (value === MAX_HOURS) setMinutes(0);
+            }}
             className="w-24"
           >
-            {Array.from({ length: 25 }, (_, h) => (
+            {Array.from({ length: MAX_HOURS + 1 }, (_, h) => (
               <option key={h} value={h}>
                 {h}
               </option>
@@ -256,7 +284,7 @@ export function ScheduleForm() {
             onChange={(e) => setMinutes(Number(e.target.value))}
             className="ml-2 w-24"
           >
-            {[0, 15, 30, 45].map((m) => (
+            {MINUTE_STEPS.filter((m) => hours < MAX_HOURS || m === 0).map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>
@@ -347,7 +375,7 @@ export function ScheduleForm() {
       </div>
       <p className="mt-6 text-xs text-ink-muted sm:pl-46">
         Times show in the selected time zone.{" "}
-        <Link href="/" className="rounded-sm text-primary hover:underline">
+        <Link href="/" className="inline-flex items-center rounded-sm text-primary underline max-sm:min-h-10">
           Back to Home
         </Link>
       </p>

@@ -21,7 +21,7 @@ const items: NavItem[] = [
 ];
 
 const rowClass =
-  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors";
+  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors max-sm:min-h-10";
 
 export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
