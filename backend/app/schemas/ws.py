@@ -1,29 +1,37 @@
-"""Messages that a client sends on the meeting WebSocket."""
+"""Messages that a client sends on the meeting WebSocket.
+
+The models are strict (BUG-21): `"yes"`, `1` or `"true"` is not a bool, and `"2"` is not
+an id. A message that does not fit gets the `bad_event` error.
+"""
 
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field, StrictInt, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
 
-class SetMuted(BaseModel):
+class _Strict(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+
+class SetMuted(_Strict):
     type: Literal["set_muted"]
     value: bool
 
 
-class SetVideoOff(BaseModel):
+class SetVideoOff(_Strict):
     type: Literal["set_video_off"]
     value: bool
 
 
-class Leave(BaseModel):
+class Leave(_Strict):
     type: Literal["leave"]
 
 
-class Signal(BaseModel):
+class Signal(_Strict):
     """A WebRTC signaling message for one peer. The server relays `data` and never reads it."""
 
     type: Literal["signal"]
-    to: StrictInt
+    to: int
     data: dict[str, Any]
 
 

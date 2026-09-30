@@ -5,6 +5,8 @@ Each socket runs two tasks:
 - The writer sends the queue that the room manager fills, then closes on a `Close` item.
 
 Database work runs in a worker thread with a short session, so it does not block the loop.
+Those threads have their own limit (`ws_db_threads`). A burst of REST requests fills the
+main thread pool, and the rooms must keep working meanwhile (BUG-02).
 """
 
 from collections.abc import Callable
@@ -28,6 +30,9 @@ router = APIRouter(tags=["realtime"])
 
 SessionFactoryDep = Annotated[Callable[[], Session], Depends(get_session_factory)]
 
+# Separate from the default thread pool that the REST endpoints use.
+_db_threads = anyio.CapacityLimiter(get_settings().ws_db_threads)
+
 
 async def _with_db(open_db: Callable[[], Session], fn: Callable[..., Any], *args: Any) -> Any:
     """Run `fn(db, *args)` in a worker thread with a new session."""
@@ -36,7 +41,7 @@ async def _with_db(open_db: Callable[[], Session], fn: Callable[..., Any], *args
         with open_db() as db:
             return fn(db, *args)
 
-    return await asyncify(work)()
+    return await asyncify(work, limiter=_db_threads)()
 
 
 async def _reject(websocket: WebSocket, exc: AppError) -> None:
@@ -92,7 +97,7 @@ async def _serve(
     websocket: WebSocket, conn: Connection, seat: Seat, open_db: Callable[[], Session]
 ) -> None:
     try:
-        snapshot = await _with_db(open_db, room_service.enter_room, seat)
+        snapshot = await _with_db(open_db, room_service.enter_room, seat, conn.first)
     except AppError as exc:
         await _reject(websocket, exc)
         return
@@ -126,7 +131,9 @@ async def meeting_socket(
         return
 
     # Join the room before the snapshot is read, so no event falls between the two.
-    conn = room_manager.connect(seat.meeting_code, seat.participant_id)
+    conn = room_manager.connect(
+        seat.meeting_code, seat.participant_id, get_settings().max_sockets_per_participant
+    )
     try:
         await _serve(websocket, conn, seat, open_db)
     except WebSocketDisconnect:

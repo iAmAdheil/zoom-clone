@@ -3,13 +3,13 @@ from typing import Annotated
 
 from authlib.integrations.base_client.errors import OAuthError
 from authlib.integrations.starlette_client import OAuth
-from fastapi import APIRouter, Query, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from fastapi.responses import RedirectResponse
 
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import clear_session_cookie, set_session_cookie
-from app.routers.deps import CurrentUserDep, DbDep
+from app.routers.deps import CurrentUserDep, DbDep, limit_demo_login
 from app.schemas.user import UserOut
 from app.services import auth_service
 
@@ -79,7 +79,7 @@ async def google_callback(request: Request, db: DbDep):
     return response
 
 
-@router.post("/auth/demo")
+@router.post("/auth/demo", dependencies=[Depends(limit_demo_login)])
 def demo_login(db: DbDep, response: Response) -> UserOut:
     if not get_settings().enable_demo_login:
         raise AppError(404, "demo_disabled", "Demo login is not enabled.")

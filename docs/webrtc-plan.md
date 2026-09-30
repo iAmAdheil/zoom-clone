@@ -14,6 +14,7 @@ Use the existing meeting WebSocket. Messages are defined in `docs/api.md` (`sign
 ## Who calls whom (avoids glare)
 - When a client gets its `snapshot`, it does not call anybody.
 - A newly joined client is called by every client that is already connected. The old client sends the offer when it receives `participant_joined` for that id.
+- The server sends `participant_joined` when the first socket of the new participant opens, not at REST join time (BUG-01). So the new client is connected when the event arrives, and a `signal` to it does not get `bad_target` for that reason. The `hello` step in `peerManager.ts` still works and is still safe to keep. (Its code comment about REST join time is out of date. Fix it with the next frontend change.)
 - Rule to break any tie: the client with the lower participant id is the offerer for that pair.
 - Use the "perfect negotiation" pattern only if a test shows glare. Keep the code simple otherwise.
 

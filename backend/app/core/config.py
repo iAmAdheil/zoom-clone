@@ -20,6 +20,36 @@ class Settings(BaseSettings):
     ws_ticket_seconds: int = 60
     rejoin_token_hours: int = 12
 
+    # Database. SQLite waits this long for a write lock before it gives up.
+    db_busy_timeout_ms: int = 5000
+    # Worker threads for the database work of WebSockets. REST requests use their own pool.
+    ws_db_threads: int = 20
+
+    # Presence. A participant who joined by REST but has no open socket after this time
+    # is not in the room. The reaper then sets `left_at`.
+    presence_grace_seconds: int = 60
+    # How often the reaper runs. 0 turns it off.
+    reaper_interval_seconds: float = 15
+    # The reaper ends a live meeting when nobody was connected for this long.
+    idle_meeting_minutes: int = 10
+    # The reaper ends a live meeting that is older than this.
+    max_meeting_hours: int = 24
+    # More sockets than this for one participant close the oldest one.
+    max_sockets_per_participant: int = 3
+
+    # The largest request body. A larger body gets 413.
+    max_body_bytes: int = 64 * 1024
+
+    # Rate limits (sliding window, in memory, per process).
+    rate_limit_enabled: bool = True
+    rate_limit_demo_per_minute: int = 30
+    rate_limit_join_per_minute: int = 60
+    rate_limit_passcode_failures: int = 10
+    rate_limit_passcode_window_seconds: int = 300
+    # Take the client IP from the first `X-Forwarded-For` entry (set by Render).
+    # Turn it off when the server is not behind a proxy that sets the header.
+    trust_forwarded_for: bool = True
+
     @property
     def is_production(self) -> bool:
         return self.environment.strip().lower() == "production"

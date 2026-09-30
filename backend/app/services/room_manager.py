@@ -15,6 +15,7 @@ shared pub/sub (for example Redis) instead.
 """
 
 import asyncio
+import itertools
 import logging
 import threading
 from dataclasses import dataclass, field
@@ -25,6 +26,12 @@ logger = logging.getLogger(__name__)
 CLOSE_NORMAL = 1000
 CLOSE_REMOVED = 4403
 CLOSE_MEETING_ENDED = 4410
+# A newer socket of the same participant replaced this one (more than the cap were open).
+# 4403 is final for the client, so the old tab does not reconnect and push out another one.
+CLOSE_TOO_MANY = 4403
+REASON_TOO_MANY = "too_many_connections"
+
+_sequence = itertools.count()
 
 
 @dataclass(frozen=True)
@@ -40,6 +47,12 @@ class Connection:
     participant_id: int
     loop: asyncio.AbstractEventLoop
     queue: asyncio.Queue[dict | Close] = field(default_factory=asyncio.Queue)
+    # Open order. A lower number is an older socket.
+    seq: int = field(default_factory=lambda: next(_sequence))
+    # True if no other socket of this participant was open when this one opened.
+    first: bool = False
+    # True after the cap closed this socket. It does not count against the cap again.
+    evicted: bool = False
 
     def push(self, item: dict | Close) -> None:
         """Add an item to the queue. Safe from any thread."""
@@ -55,11 +68,29 @@ class RoomManager:
         self._rooms: dict[str, set[Connection]] = {}
         self._lock = threading.Lock()
 
-    def connect(self, meeting_code: str, participant_id: int) -> Connection:
-        """Register a socket. Call it on the event loop that serves the socket."""
+    def connect(
+        self, meeting_code: str, participant_id: int, max_per_participant: int | None = None
+    ) -> Connection:
+        """Register a socket. Call it on the event loop that serves the socket.
+
+        If the participant then has more than `max_per_participant` open sockets, the
+        oldest ones get a `Close` with 4403 `too_many_connections`.
+        """
         conn = Connection(participant_id, asyncio.get_running_loop())
         with self._lock:
-            self._rooms.setdefault(meeting_code, set()).add(conn)
+            room = self._rooms.setdefault(meeting_code, set())
+            mine = sorted(
+                (c for c in room if c.participant_id == participant_id and not c.evicted),
+                key=lambda c: c.seq,
+            )
+            conn.first = not any(c.participant_id == participant_id for c in room)
+            room.add(conn)
+            extra = len(mine) + 1 - max_per_participant if max_per_participant else 0
+            evicted = mine[: max(0, extra)]
+            for old in evicted:
+                old.evicted = True
+        for old in evicted:
+            old.push(Close(CLOSE_TOO_MANY, REASON_TOO_MANY))
         return conn
 
     def disconnect(self, meeting_code: str, conn: Connection) -> bool:
@@ -79,10 +110,15 @@ class RoomManager:
             return room
         return [c for c in room if c.participant_id == participant_id]
 
-    def broadcast(self, meeting_code: str, event: dict) -> None:
-        """Send `event` to every socket in the room."""
+    def broadcast(self, meeting_code: str, event: dict, exclude: int | None = None) -> None:
+        """Send `event` to every socket in the room, except the sockets of `exclude`."""
         for conn in self.connections(meeting_code):
-            conn.push(event)
+            if conn.participant_id != exclude:
+                conn.push(event)
+
+    def has_connections(self, meeting_code: str) -> bool:
+        with self._lock:
+            return bool(self._rooms.get(meeting_code))
 
     def send_to_participant(self, meeting_code: str, participant_id: int, event: dict) -> None:
         """Send `event` only to the sockets of one participant."""
