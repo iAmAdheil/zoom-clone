@@ -11,6 +11,8 @@ from app.core.config import get_settings
 from app.core.db import Base, get_db, get_session_factory, make_engine
 from app.main import app
 from app.models import User
+from app.services import rate_limit
+from app.services.presence import pending_joins
 
 
 @pytest.fixture
@@ -30,7 +32,19 @@ def settings(monkeypatch):
     monkeypatch.setattr(s, "google_client_id", None)
     monkeypatch.setattr(s, "google_client_secret", None)
     monkeypatch.setattr(s, "frontend_origin", "http://localhost:3000")
+    # The tests run the reaper by hand (reap_once). The lifespan does not start it.
+    monkeypatch.setattr(s, "reaper_interval_seconds", 0)
     return s
+
+
+@pytest.fixture(autouse=True)
+def fresh_memory():
+    """Rate-limit counters and pending joins live in memory. Each test starts empty."""
+    rate_limit.reset_all()
+    pending_joins.clear()
+    yield
+    rate_limit.reset_all()
+    pending_joins.clear()
 
 
 def _client(db_session: Session) -> TestClient:

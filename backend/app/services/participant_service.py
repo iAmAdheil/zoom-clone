@@ -6,6 +6,7 @@ from app.core.security import verify_ws_ticket
 from app.models import Meeting, MeetingStatus, Participant, ParticipantRole, User
 from app.schemas.participant import ParticipantOut
 from app.services.meeting_service import now
+from app.services.presence import pending_joins
 from app.services.room_manager import CLOSE_REMOVED, room_manager
 
 
@@ -70,6 +71,7 @@ def _require_in_meeting(participant: Participant) -> None:
 
 
 def list_participants(db: Session, meeting: Meeting) -> list[Participant]:
+    """Every row that has not left and was not removed, connected or not."""
     return list(
         db.scalars(
             select(Participant)
@@ -77,6 +79,28 @@ def list_participants(db: Session, meeting: Meeting) -> list[Participant]:
             .order_by(Participant.joined_at, Participant.id)
         )
     )
+
+
+def connected_ids(meeting_code: str) -> set[int]:
+    """The ids of the participants that have an open socket in the room."""
+    return {c.participant_id for c in room_manager.connections(meeting_code)}
+
+
+def list_connected(db: Session, meeting: Meeting) -> list[Participant]:
+    """The rows in the room now: not left, not removed, and with an open socket."""
+    connected = connected_ids(meeting.meeting_code)
+    return [p for p in list_participants(db, meeting) if p.id in connected]
+
+
+def list_present(db: Session, meeting: Meeting) -> list[Participant]:
+    """For `GET /participants`: the connected rows, and the rows that joined by REST
+    less than the grace time ago and have no socket yet. Ghosts are not listed."""
+    connected = connected_ids(meeting.meeting_code)
+    return [
+        p
+        for p in list_participants(db, meeting)
+        if p.id in connected or pending_joins.is_pending(p.id)
+    ]
 
 
 def updated_event(participant: Participant) -> dict:
@@ -130,6 +154,7 @@ def remove_participant(
     participant.removed = True
     participant.left_at = participant.left_at or now()
     db.commit()
+    pending_joins.discard(participant.id)
     db.refresh(participant)
     # Only the removed participant gets `you_were_removed`. Then the server closes its sockets.
     room_manager.send_to_participant(

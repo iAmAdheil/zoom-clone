@@ -68,10 +68,11 @@ def test_happy_path(host_client, guest_client, db_session):
 
         guest = join(guest_client, code, "Gus")
         gid = guest["participant"]["id"]
-        expect_joined(hws, gid)
 
         with guest_client.websocket_connect(ws_path(code, guest["ws_ticket"])) as gws:
             assert ids(gws.receive_json()) == [hid, gid]
+            # The host hears about the guest when the guest's socket opens, not at REST join.
+            expect_joined(hws, gid)
 
             gws.send_json({"type": "set_muted", "value": True})
             for ws in (gws, hws):
@@ -159,10 +160,10 @@ def test_removed_participant_is_closed_and_cannot_connect(host_client, guest_cli
         hws.receive_json()
         guest = join(guest_client, code, "Otto")
         gid = guest["participant"]["id"]
-        expect_joined(hws, gid)
 
         with guest_client.websocket_connect(ws_path(code, guest["ws_ticket"])) as gws:
             gws.receive_json()
+            expect_joined(hws, gid)
             spare = join(guest_client, code, "Otto")  # same row, an unused ticket
             r = host_client.post(f"/api/meetings/{code}/participants/{gid}/remove")
             assert r.status_code == 200
@@ -196,10 +197,10 @@ def test_mute_all_reaches_every_socket(host_client, guest_client, db_session):
         hws.receive_json()
         guest = join(guest_client, code, "Gus")
         gid = guest["participant"]["id"]
-        expect_joined(hws, gid)
 
         with guest_client.websocket_connect(ws_path(code, guest["ws_ticket"])) as gws:
             gws.receive_json()
+            expect_joined(hws, gid)
             assert host_client.post(f"/api/meetings/{code}/mute-all").status_code == 200
             for ws in (hws, gws):
                 assert ws.receive_json() == {"type": "mute_all", "participant_ids": [gid]}
@@ -218,12 +219,12 @@ def test_end_meeting_closes_every_socket(host_client, guest_client):
     with host_client.websocket_connect(ws_path(code, host["ws_ticket"])) as hws:
         hws.receive_json()
         guest = join(guest_client, code, "Gus")
-        expect_joined(hws, guest["participant"]["id"])
         late = join(guest_client, code, "Late")  # never connects before the end
-        expect_joined(hws, late["participant"]["id"])
 
         with guest_client.websocket_connect(ws_path(code, guest["ws_ticket"])) as gws:
-            assert len(ids(gws.receive_json())) == 3
+            # The snapshot lists the connected people only. "Late" has no socket.
+            assert len(ids(gws.receive_json())) == 2
+            expect_joined(hws, guest["participant"]["id"])
             assert host_client.post(f"/api/meetings/{code}/end").status_code == 200
             for ws in (hws, gws):
                 assert ws.receive_json() == {"type": "meeting_ended"}
@@ -245,20 +246,20 @@ def test_drop_then_rejoin_keeps_one_row(host_client, guest_client, db_session):
         hws.receive_json()
         first = join(guest_client, code, "Gus")
         gid = first["participant"]["id"]
-        expect_joined(hws, gid)
 
         with guest_client.websocket_connect(ws_path(code, first["ws_ticket"])) as gws:
             gws.receive_json()
+            expect_joined(hws, gid)
         # The socket dropped without `leave`.
         assert hws.receive_json() == left(gid)
         assert db_session.get(Participant, gid).left_at is not None
 
         again = join(guest_client, code, "Gus", rejoin_token=first["rejoin_token"])
         assert again["participant"]["id"] == gid
-        expect_joined(hws, gid)
 
         with guest_client.websocket_connect(ws_path(code, again["ws_ticket"])) as gws:
             assert ids(gws.receive_json()) == [hid, gid]
+            expect_joined(hws, gid)
 
     rows = db_session.scalar(select(func.count()).select_from(Participant))
     assert rows == 2
@@ -276,12 +277,12 @@ def test_reconnect_before_drop_is_seen_keeps_participant(
         hws.receive_json()
         a = join(guest_client, code, "Otto")
         pid = a["participant"]["id"]
-        expect_joined(hws, pid)
         b = join(guest_client, code, "Otto")
-        assert b["participant"]["id"] == pid  # no new row, no new event
+        assert b["participant"]["id"] == pid  # no new row
 
         with guest_client.websocket_connect(ws_path(code, a["ws_ticket"])) as ws1:
             ws1.receive_json()
+            expect_joined(hws, pid)  # the first socket only. The second one sends nothing.
             with guest_client.websocket_connect(ws_path(code, b["ws_ticket"])) as ws2:
                 assert ids(ws2.receive_json()) == [host["participant"]["id"], pid]
             # One socket is still open, so the participant stays in the room.
@@ -302,11 +303,11 @@ def test_fresh_ticket_after_leave_brings_the_row_back(host_client, guest_client,
         hws.receive_json()
         a = join(guest_client, code, "Otto")
         pid = a["participant"]["id"]
-        expect_joined(hws, pid)
         b = join(guest_client, code, "Otto")  # a second tab gets a ticket
 
         with guest_client.websocket_connect(ws_path(code, a["ws_ticket"])) as ws1:
             ws1.receive_json()
+            expect_joined(hws, pid)
             ws1.send_json({"type": "leave"})
             expect_close(ws1, 1000, "left")
         assert hws.receive_json() == left(pid)

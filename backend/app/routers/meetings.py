@@ -1,10 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
 from app.core.config import get_settings
 from app.models import User
-from app.routers.deps import CurrentUserDep, DbDep, OptionalUserDep
+from app.routers.deps import ClientIpDep, CurrentUserDep, DbDep, OptionalUserDep, limit_join
 from app.schemas.meeting import (
     InstantMeetingIn,
     JoinIn,
@@ -71,10 +71,12 @@ def delete(meeting_id: int, user: CurrentUserDep, db: DbDep) -> None:
     svc.cancel_meeting(db, meeting, user)
 
 
-@router.post("/{code}/join")
-def join(code: str, data: JoinIn, user: OptionalUserDep, db: DbDep) -> JoinOut:
+@router.post("/{code}/join", dependencies=[Depends(limit_join)])
+def join(
+    code: str, data: JoinIn, user: OptionalUserDep, db: DbDep, client_ip: ClientIpDep
+) -> JoinOut:
     meeting = svc.get_by_code(db, code)
-    participant, ticket, rejoin_token = svc.join_meeting(db, meeting, user, data)
+    participant, ticket, rejoin_token = svc.join_meeting(db, meeting, user, data, client_ip)
     return JoinOut(
         participant=ParticipantOut.model_validate(participant),
         ws_ticket=ticket,

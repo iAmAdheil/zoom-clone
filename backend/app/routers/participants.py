@@ -18,9 +18,7 @@ def list_participants(
 ) -> list[ParticipantOut]:
     meeting = meeting_service.get_by_code(db, code)
     participant_service.require_viewer(db, meeting, user, ticket)
-    return [
-        ParticipantOut.model_validate(p) for p in participant_service.list_participants(db, meeting)
-    ]
+    return [ParticipantOut.model_validate(p) for p in participant_service.list_present(db, meeting)]
 
 
 @router.post("/participants/{pid}/mute")

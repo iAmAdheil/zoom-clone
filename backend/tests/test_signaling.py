@@ -96,7 +96,6 @@ def test_signal_to_self_is_bad_target(room):
 
 def test_participant_who_is_not_connected_is_bad_target(room, guest_client):
     quiet = join(guest_client, room["code"], "Quiet")  # joined by REST, no socket
-    expect_joined(room["hws"], quiet["participant"]["id"])
     room["hws"].send_json(signal(quiet["participant"]["id"]))
     assert room["hws"].receive_json()["code"] == "bad_target"
 
@@ -207,8 +206,10 @@ def test_snapshot_lists_only_connected_participants(host_client, guest_client, d
         assert snap["connected_ids"] == [hid]
 
         quiet = join(guest_client, code, "Quiet")["participant"]["id"]  # REST only
-        expect_joined(hws, quiet)
 
         gid, _, snap = connect(stack.enter_context(_client(db_session)), code, "Gus", stack)
         assert snap["connected_ids"] == [hid, gid]
-        assert quiet in [p["id"] for p in snap["participants"]]
+        # `participants` and `connected_ids` name the same people (BUG-01).
+        assert [p["id"] for p in snap["participants"]] == [hid, gid]
+        assert quiet not in snap["connected_ids"]
+        expect_joined(hws, gid)  # the host heard about Gus only, never about Quiet

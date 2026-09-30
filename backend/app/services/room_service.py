@@ -14,7 +14,8 @@ from app.models import Meeting, MeetingStatus, Participant
 from app.schemas.participant import ParticipantOut
 from app.schemas.ws import SetMuted, SetVideoOff, Signal
 from app.services.meeting_service import get_by_code, joined_event, now
-from app.services.participant_service import list_participants, updated_event
+from app.services.participant_service import list_connected, updated_event
+from app.services.presence import pending_joins
 from app.services.room_manager import room_manager
 from app.services.ticket_registry import used_tickets
 
@@ -60,28 +61,33 @@ def take_seat(db: Session, raw_code: str, ticket: str | None) -> Seat:
     return Seat(meeting.id, meeting.meeting_code, claims["pid"])
 
 
-def enter_room(db: Session, seat: Seat) -> dict:
+def enter_room(db: Session, seat: Seat, first_socket: bool) -> dict:
     """Call after the socket is in the room manager. Return the `snapshot` event.
 
-    If the row left after the ticket was made (for example, another tab of the same
-    user sent `leave`), the row comes back and the room gets `participant_joined`.
+    The participant is in the room from now on. If this is the first open socket of the
+    participant, the others get `participant_joined`. If the row left after the ticket
+    was made (for example, the reaper closed it, or another tab sent `leave`), the row
+    comes back first.
+
+    The snapshot lists the connected participants only, so `participants` and
+    `connected_ids` always name the same people.
     """
     meeting = db.get(Meeting, seat.meeting_id)
     participant = db.get(Participant, seat.participant_id)
     _check_seat(meeting, participant)
-    if participant.left_at is not None:
+    came_back = participant.left_at is not None
+    if came_back:
         participant.left_at = None
         db.commit()
-        room_manager.broadcast(seat.meeting_code, joined_event(participant))
-    snapshot = {
+    pending_joins.discard(participant.id)
+    if first_socket or came_back:
+        room_manager.broadcast(seat.meeting_code, joined_event(participant), exclude=participant.id)
+    present = list_connected(db, meeting)
+    return {
         "type": "snapshot",
-        "connected_ids": connected_ids(seat.meeting_code),
-        "participants": [
-            ParticipantOut.model_validate(p).model_dump(mode="json")
-            for p in list_participants(db, meeting)
-        ],
+        "connected_ids": [p.id for p in sorted(present, key=lambda p: p.id)],
+        "participants": [ParticipantOut.model_validate(p).model_dump(mode="json") for p in present],
     }
-    return snapshot
 
 
 def set_media_state(db: Session, seat: Seat, event: SetMuted | SetVideoOff) -> None:
@@ -138,11 +144,12 @@ def relay_signal(db: Session, seat: Seat, event: Signal) -> dict | None:
     """
     if not _in_room(db, seat, seat.participant_id):
         return None  # The sender left or was removed. Its socket closes soon.
+    # The size check comes before the target check (docs/api.md, "Error order").
+    if len(json.dumps(event.data, separators=(",", ":")).encode()) > MAX_SIGNAL_BYTES:
+        return error_event("payload_too_large", "The signal data is larger than 16 KB.")
     connected = event.to in connected_ids(seat.meeting_code)
     if event.to == seat.participant_id or not connected or not _in_room(db, seat, event.to):
         return error_event("bad_target", "The target is not connected to this meeting.")
-    if len(json.dumps(event.data, separators=(",", ":")).encode()) > MAX_SIGNAL_BYTES:
-        return error_event("payload_too_large", "The signal data is larger than 16 KB.")
     room_manager.send_to_participant(
         seat.meeting_code,
         event.to,

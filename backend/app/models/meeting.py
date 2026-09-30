@@ -40,7 +40,8 @@ class Meeting(Base):
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
     type: Mapped[MeetingType] = mapped_column(str_enum(MeetingType))
-    status: Mapped[MeetingStatus] = mapped_column(str_enum(MeetingStatus))
+    # Indexed: the reaper looks for live and scheduled meetings every 15 s.
+    status: Mapped[MeetingStatus] = mapped_column(str_enum(MeetingStatus), index=True)
     access: Mapped[MeetingAccess] = mapped_column(
         str_enum(MeetingAccess), default=MeetingAccess.allow_guests
     )

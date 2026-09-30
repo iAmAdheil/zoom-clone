@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import Meeting, MeetingAccess, MeetingStatus, MeetingType, User
 from app.schemas.participant import ParticipantOut
-from app.schemas.user import UserOut
+from app.schemas.user import PublicUserOut, UserOut
 
 
 def _check_timezone(value: str) -> str:
@@ -34,32 +34,38 @@ class MeetingOut(BaseModel):
     type: MeetingType
     status: MeetingStatus
     access: MeetingAccess
+    # Only the host gets the passcode. Everyone else gets null (BUG-04).
     passcode: str | None
+    requires_passcode: bool
     scheduled_start: datetime | None
     duration_min: int | None
     timezone: str
     started_at: datetime | None
     ended_at: datetime | None
-    host: UserOut
+    # The host sees their own full `User`. Everyone else sees `{id, name, avatar_url}`.
+    host: UserOut | PublicUserOut
     invite_link: str
 
     @classmethod
     def from_model(
         cls, meeting: Meeting, frontend_origin: str, viewer: User | None = None
     ) -> "MeetingOut":
-        """Build the response. Only the host gets the passcode in `invite_link` (`?pwd=`)."""
+        """Build the response for `viewer`.
+
+        Only the host gets the passcode, the host's email, and `?pwd=` in `invite_link`.
+        """
+        is_host = viewer is not None and viewer.id == meeting.host_id
         link = f"{frontend_origin.rstrip('/')}/j/{meeting.meeting_code}"
-        if meeting.passcode and viewer is not None and viewer.id == meeting.host_id:
+        if meeting.passcode and is_host:
             link += f"?pwd={quote(meeting.passcode, safe='')}"
-        return cls.model_validate(
-            {
-                **{
-                    name: getattr(meeting, name)
-                    for name in cls.model_fields
-                    if name != "invite_link"
-                },
-                "invite_link": link,
-            }
+        host_schema = UserOut if is_host else PublicUserOut
+        built = {"invite_link", "host", "passcode", "requires_passcode"}
+        return cls(
+            **{name: getattr(meeting, name) for name in cls.model_fields if name not in built},
+            passcode=meeting.passcode if is_host else None,
+            requires_passcode=bool(meeting.passcode),
+            host=host_schema.model_validate(meeting.host),
+            invite_link=link,
         )
 
 

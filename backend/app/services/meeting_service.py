@@ -1,6 +1,7 @@
 import re
 import secrets
 from datetime import UTC, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -18,6 +19,8 @@ from app.models import (
 )
 from app.schemas.meeting import InstantMeetingIn, JoinIn, MeetingPatch, ScheduleMeetingIn
 from app.schemas.participant import ParticipantOut
+from app.services import rate_limit
+from app.services.presence import pending_joins
 from app.services.room_manager import CLOSE_MEETING_ENDED, room_manager
 
 CODE_ATTEMPTS = 10
@@ -33,12 +36,30 @@ def _as_utc(value: datetime) -> datetime:
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
 
+def local_to_utc(value: datetime, timezone: str) -> datetime:
+    """A time without an offset is a wall-clock time in `timezone`. Return it in UTC."""
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=ZoneInfo(timezone))
+    return value.astimezone(UTC)
+
+
 # ---- codes and lookup -------------------------------------------------------
 
 
+# A meeting code as a person types it: digits, maybe with spaces or dashes between them.
+_TYPED_CODE = re.compile(r"[0-9][0-9 -]*")
+
+
 def normalize_code(raw: str) -> str:
-    """Keep digits only. '123 456 7890' becomes '1234567890'."""
-    return re.sub(r"\D", "", raw)
+    """'123 456 7890' and '123-456-7890' become '1234567890'.
+
+    Any other character (a letter, a slash, a non-ASCII digit) gives '', which is an
+    unknown meeting. So '43984abc18723' is not meeting '4398418723'.
+    """
+    raw = raw.strip()
+    if not _TYPED_CODE.fullmatch(raw):
+        return ""
+    return raw.replace(" ", "").replace("-", "")
 
 
 def generate_code(db: Session) -> str:
@@ -96,7 +117,8 @@ def _check_future(start: datetime) -> None:
 
 
 def create_scheduled(db: Session, host: User, data: ScheduleMeetingIn) -> Meeting:
-    _check_future(data.scheduled_start)
+    start = local_to_utc(data.scheduled_start, data.timezone)
+    _check_future(start)
     meeting = Meeting(
         meeting_code=generate_code(db),
         host_id=host.id,
@@ -106,7 +128,7 @@ def create_scheduled(db: Session, host: User, data: ScheduleMeetingIn) -> Meetin
         status=MeetingStatus.scheduled,
         access=data.access,
         passcode=data.passcode,
-        scheduled_start=_as_utc(data.scheduled_start),
+        scheduled_start=start,
         duration_min=data.duration_min,
         timezone=data.timezone,
     )
@@ -179,8 +201,9 @@ def update_meeting(db: Session, meeting: Meeting, user: User, patch: MeetingPatc
     if time_fields and meeting.status != MeetingStatus.scheduled:
         raise AppError(409, "meeting_not_editable", "Only a scheduled meeting has a start time.")
     if "scheduled_start" in changes:
+        timezone = changes.get("timezone") or meeting.timezone
+        changes["scheduled_start"] = local_to_utc(changes["scheduled_start"], timezone)
         _check_future(changes["scheduled_start"])
-        changes["scheduled_start"] = _as_utc(changes["scheduled_start"])
 
     for field, value in changes.items():
         setattr(meeting, field, value)
@@ -202,6 +225,11 @@ def end_meeting(db: Session, meeting: Meeting, user: User) -> Meeting:
     require_host(meeting, user)
     if meeting.status == MeetingStatus.ended:
         raise AppError(410, "meeting_ended", "The meeting already ended.")
+    return finish_meeting(db, meeting)
+
+
+def finish_meeting(db: Session, meeting: Meeting) -> Meeting:
+    """End the meeting for everyone. The host's `end` and the reaper use it."""
     ended = now()
     meeting.status = MeetingStatus.ended
     meeting.ended_at = ended
@@ -238,11 +266,13 @@ def _rejoin_row(
 
 
 def join_meeting(
-    db: Session, meeting: Meeting, user: User | None, data: JoinIn
+    db: Session, meeting: Meeting, user: User | None, data: JoinIn, client_ip: str = ""
 ) -> tuple[Participant, str, str]:
     """Apply the join rules. Order: ended, access, removed, passcode.
 
     Returns the participant, a WebSocket ticket, and a rejoin token.
+    The room hears nothing now. It gets `participant_joined` when the first socket of
+    the participant opens (see presence.py).
     """
     if meeting.status == MeetingStatus.ended:
         raise AppError(410, "meeting_ended", "The meeting has ended.")
@@ -269,8 +299,11 @@ def join_meeting(
         raise AppError(403, "removed_from_meeting", "The host removed you from this meeting.")
 
     # The host does not need the passcode. Everyone else does.
-    if meeting.passcode and not is_host and data.passcode != meeting.passcode:
-        raise AppError(403, "bad_passcode", "The passcode is not correct.")
+    if meeting.passcode and not is_host:
+        rate_limit.check_passcode_allowed(client_ip, meeting.meeting_code)
+        if data.passcode != meeting.passcode:
+            rate_limit.record_passcode_failure(client_ip, meeting.meeting_code)
+            raise AppError(403, "bad_passcode", "The passcode is not correct.")
 
     if participant is None and user is not None:
         # A signed-in user who is still in the room keeps the same row (second tab, reload).
@@ -281,8 +314,6 @@ def join_meeting(
                 Participant.left_at.is_(None),
             )
         )
-    # The room hears about a new row, or an old row that comes back after it left.
-    is_new = participant is None or participant.left_at is not None
     if participant is None:
         participant = Participant(
             meeting_id=meeting.id,
@@ -302,8 +333,8 @@ def join_meeting(
     db.refresh(participant)
     ticket = create_ws_ticket(participant.id, meeting.id)
     rejoin_token = create_rejoin_token(participant.id, meeting.id)
-    if is_new:
-        room_manager.broadcast(meeting.meeting_code, joined_event(participant))
+    if not room_manager.connections(meeting.meeting_code, participant.id):
+        pending_joins.add(participant.id)
     return participant, ticket, rejoin_token
 
 

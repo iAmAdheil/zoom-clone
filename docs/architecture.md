@@ -31,14 +31,14 @@ All times are UTC ISO-8601 in the API. The UI shows the user's local time.
 
 `meetings`
 - id (int PK), meeting_code (10 digits, unique, indexed), host_id (FK users.id), title, description (nullable)
-- type (`instant` | `scheduled`), status (`scheduled` | `live` | `ended`)
+- type (`instant` | `scheduled`), status (`scheduled` | `live` | `ended`, indexed)
 - access (`verified_only` | `allow_guests`), passcode (nullable)
 - scheduled_start (nullable, UTC), duration_min (nullable), timezone (IANA string, for display)
 - started_at (nullable), ended_at (nullable), created_at
 - Index: (host_id, scheduled_start)
 
 `participants`
-- id (int PK), meeting_id (FK meetings.id, indexed), user_id (nullable FK users.id), display_name
+- id (int PK), meeting_id (FK meetings.id, indexed), user_id (nullable FK users.id, indexed), display_name
 - role (`host` | `co_host` | `attendee`), joined_at, left_at (nullable)
 - is_muted (bool), is_video_off (bool), removed (bool)
 
@@ -51,6 +51,15 @@ Rules:
 - One channel per meeting. It carries participant state only: join, leave, mute, video toggle, remove, end.
 - No media goes through it. Media is local camera and microphone preview (`getUserMedia`).
 - The channel relays WebRTC signaling messages (`signal`) between two participants. The server never reads their `data` (see `api.md`).
+- Presence: a participant is in the room only while a socket is open. A REST join alone does not count. The room gets `participant_joined` when the first socket opens.
+- A background reaper (an asyncio task started in the app lifespan, every 15 s) closes participant rows that never opened a socket (after 60 s), and ends live meetings that are idle for 10 minutes or live for 24 hours.
+- The room manager, the ticket registry, the pending joins and the rate-limit counters are in memory. This works for one server process only.
+
+## Load and SQLite
+- SQLite runs without a connection pool (`NullPool`), in WAL mode, with `busy_timeout`. Each session opens its own connection. A pool smaller than the thread pool froze the server under a burst (BUG-02).
+- WebSocket database work uses its own thread limit, so a REST burst does not stop the rooms.
+- A lock or connection timeout gives 503 `server_busy` with `Retry-After`, not 500.
+- `/api/health` is async and does not touch the database.
 
 ## Backend layout
 ```
@@ -60,7 +69,8 @@ backend/app/
   models/            SQLAlchemy models
   schemas/           Pydantic schemas
   routers/           auth.py, meetings.py, participants.py, ws.py
-  services/          meeting_service.py, participant_service.py, room_manager.py
+  services/          meeting_service.py, participant_service.py, room_manager.py,
+                     room_service.py, presence.py, reaper.py, rate_limit.py
   seed.py            seed script
 backend/tests/
 ```
@@ -76,6 +86,6 @@ frontend/src/
 ```
 
 ## Environment variables
-Backend: `ENVIRONMENT` (`development` by default; the server refuses to start in `production` with the default `JWT_SECRET`), `DATABASE_URL`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_ORIGIN`, `ENABLE_DEMO_LOGIN`.
+Backend: `ENVIRONMENT` (`development` by default. The server does not start in `production` with the default `JWT_SECRET`.), `DATABASE_URL`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_ORIGIN`, `ENABLE_DEMO_LOGIN`. Optional tuning (rate limits, body size, socket cap, reaper times): see `backend/README.md`.
 Frontend: `BACKEND_URL`, `NEXT_PUBLIC_WS_URL`.
 Never commit real values. Commit `.env.example` files.

@@ -20,7 +20,8 @@ class Participant(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     meeting_id: Mapped[int] = mapped_column(ForeignKey("meetings.id"), index=True)
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    # Indexed: Recent meetings and the join path look rows up by user (BUG-16).
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True)
     display_name: Mapped[str] = mapped_column(String(255))
     role: Mapped[ParticipantRole] = mapped_column(
         str_enum(ParticipantRole), default=ParticipantRole.attendee
