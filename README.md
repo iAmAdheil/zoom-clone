@@ -4,6 +4,15 @@ A video meeting web app that copies the Zoom web client. You can start a meeting
 
 Built for the Scaler SDE Fullstack assignment. The brief is in `ASSIGNMENT.pdf`.
 
+## Live demo
+
+- App: https://zoom-clone-web-one.vercel.app
+- API health: https://zoom-clone-api-1i2b.onrender.com/api/health
+- Code: https://github.com/iAmAdheil/zoom-clone
+
+On the sign-in page, use **Continue as demo user** (no account needed), or **Continue with Google**. Google sign-in works for the accounts listed as test users while the Google app is in Testing mode.
+The backend runs on the Render free tier. After a quiet period, the first request can take about 50 seconds. The database resets on each backend deploy, and the seed data is created again.
+
 ## Screenshots
 
 | Sign in | Dashboard |
