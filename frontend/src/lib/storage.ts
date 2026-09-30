@@ -29,6 +29,17 @@ export function writeStorage(which: Area, key: string, value: string | null): vo
   }
 }
 
+const passcodeKey = (code: string) => `zc:passcode:${code}`;
+
+/**
+ * The passcode that worked for one meeting code. It lives in sessionStorage, so it dies with the tab.
+ * A guest does not type it again after a reload or a reconnect.
+ */
+export const passcodes = {
+  read: (code: string) => readStorage("session", passcodeKey(code)),
+  write: (code: string, passcode: string | null) => writeStorage("session", passcodeKey(code), passcode),
+};
+
 const NAME_KEY = "zc:display-name";
 
 /** The display name from "Remember my name for future meetings". */

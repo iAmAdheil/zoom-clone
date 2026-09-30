@@ -19,6 +19,7 @@ Error body: `{"detail": "<message>", "code": "<machine_code>"}`.
 | 404 | `meeting_not_found` | The meeting code or id is unknown. |
 | 404 | `participant_not_found` | The participant id is not in this meeting. |
 | 404 | `demo_disabled` | `ENABLE_DEMO_LOGIN` is not `true`. |
+| 409 | `participant_not_in_meeting` | A `mute` or `remove` request names a participant who left or was removed. No event is sent. |
 | 409 | `meeting_not_editable` | The meeting ended, or a time field changes on a meeting that is not `scheduled`. |
 | 409 | `meeting_not_cancellable` | Only a `scheduled` meeting can be cancelled. |
 | 410 | `meeting_ended` | The meeting ended (join, host action, or a second `end`). |
@@ -79,9 +80,9 @@ Other HTTP errors use `http_error` as the code. The WebSocket has its own close 
 
 - `GET /participants` returns the participants who have not left and were not removed, ordered by `joined_at`. It accepts the `ticket` query parameter (`?ticket=<ws_ticket>`). A valid, unexpired ticket for this meeting works in place of a session, even if the socket already used it. Without a ticket, the caller needs a session as the host or as a participant. Otherwise the error is 403 `not_participant`.
 - `mute` returns the muted `Participant`. It broadcasts `participant_updated`.
-- `mute-all` mutes every active attendee. The host and co-hosts stay unmuted. It returns the list of muted `Participant` objects (`Participant[]`), and broadcasts `mute_all`.
+- `mute-all` mutes every active attendee. It skips participants who left or were removed. The host and co-hosts stay unmuted. It returns the list of muted `Participant` objects (`Participant[]`), and broadcasts `mute_all`.
 - `remove` returns the removed `Participant`. It sets `removed=true`, sends `you_were_removed` to that participant, closes its sockets, and broadcasts `participant_left`. The host cannot be removed (403 `cannot_remove_host`).
-- These three actions return 410 `meeting_ended` if the meeting ended, and 404 `participant_not_found` for an unknown `pid`.
+- These three actions return 410 `meeting_ended` if the meeting ended, and 404 `participant_not_found` for an unknown `pid`. `mute` and `remove` also return 409 `participant_not_in_meeting` if the participant left or was removed.
 
 `Participant`: `{id, display_name, role, is_muted, is_video_off, joined_at, user_id|null}`
 
