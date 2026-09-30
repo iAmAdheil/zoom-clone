@@ -48,12 +48,12 @@ Rules:
 - Meeting codes are random 10-digit numbers. The service retries on a collision.
 
 ## Realtime room (FastAPI WebSocket)
-- One channel per meeting. It carries participant state only: join, leave, mute, video toggle, remove, end.
+- One channel per meeting. It carries participant state (join, leave, mute, video toggle, remove, end) and chat messages. Chat stays in memory (last 100 per meeting) and is cleared when the meeting ends. It is never stored in the database.
 - No media goes through it. Media is local camera and microphone preview (`getUserMedia`).
 - The channel relays WebRTC signaling messages (`signal`) between two participants. The server never reads their `data` (see `api.md`).
 - Presence: a participant is in the room only while a socket is open. A REST join alone does not count. The room gets `participant_joined` when the first socket opens.
 - A background reaper (an asyncio task started in the app lifespan, every 15 s) closes participant rows that never opened a socket (after 60 s), and ends live meetings that are idle for 10 minutes or live for 24 hours.
-- The room manager, the ticket registry, the pending joins and the rate-limit counters are in memory. This works for one server process only.
+- The room manager, the chat history, the ticket registry, the pending joins and the rate-limit counters are in memory. This works for one server process only.
 
 ## Load and SQLite
 - SQLite runs without a connection pool (`NullPool`), in WAL mode, with `busy_timeout`. Each session opens its own connection. A pool smaller than the thread pool froze the server under a burst (BUG-02).
@@ -70,7 +70,7 @@ backend/app/
   schemas/           Pydantic schemas
   routers/           auth.py, meetings.py, participants.py, ws.py
   services/          meeting_service.py, participant_service.py, room_manager.py,
-                     room_service.py, presence.py, reaper.py, rate_limit.py
+                     chat_history.py, room_service.py, presence.py, reaper.py, rate_limit.py
   seed.py            seed script
 backend/tests/
 ```

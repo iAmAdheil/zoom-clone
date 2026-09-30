@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { Popover } from "@/components/ui/Popover";
-import { formatMeetingCode } from "@/lib/format";
+import { formatMeetingCode, passcodeText } from "@/lib/format";
 import type { Meeting } from "@/lib/types";
 import { InviteLinkBox } from "./InviteLinkBox";
 
@@ -16,7 +16,7 @@ export function MeetingInfoPopover({ meeting, onCopied }: MeetingInfoPopoverProp
   const rows: Array<[string, string]> = [
     ["Meeting ID", formatMeetingCode(meeting.meeting_code)],
     ["Host", meeting.host.name],
-    ["Passcode", meeting.passcode ?? "None"],
+    ["Passcode", passcodeText(meeting)],
     ["Access", meeting.access === "allow_guests" ? "Guests allowed" : "Verified users only"],
   ];
 

@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useEffectEvent, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/Button";
 import { Check } from "@/components/ui/Field";
 import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { copyText, useMediaQuery, useToast } from "@/lib/hooks";
-import type { ChatMessage, Meeting } from "@/lib/types";
+import type { Meeting } from "@/lib/types";
 import { useRoom } from "@/lib/useRoom";
 import { unlockAudio, useAudioBlocked } from "@/lib/webrtc/audioPlayback";
 import { canListDevices, useDeviceChoices } from "@/lib/webrtc/devices";
+import { deviceToast } from "@/lib/webrtc/mediaAccess";
 import { useMicProblem } from "@/lib/webrtc/micLevel";
 import type { MediaKind } from "@/lib/webrtc/peerManager";
 import { useTrackToggles, type LocalMedia } from "@/lib/webrtc/useMedia";
@@ -53,23 +54,27 @@ export function MeetingRoom({
 }: MeetingRoomProps) {
   const toast = useToast(3500);
   const room = useRoom(code, toast.show);
-  const { participants, me, status, actions } = room;
+  const { participants, me, status, actions, chat } = room;
   const peers = usePeers(room, media.stream);
   const soundBlocked = useAudioBlocked();
   const choices = useDeviceChoices(media.stream);
   const showDeviceMenus = useSyncExternalStore(noSubscribe, canListDevices, () => false);
 
   const [panel, setPanel] = useState<Panel>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [unread, setUnread] = useState(0);
   const [allowSelfUnmute, setAllowSelfUnmute] = useState(true);
   const [reaction, setReaction] = useState<{ emoji: string; key: number } | null>(null);
   const [muteAllOpen, setMuteAllOpen] = useState(false);
   const [muteAllAllowUnmute, setMuteAllAllowUnmute] = useState(true);
   const [removeId, setRemoveId] = useState<number | null>(null);
   const [ending, setEnding] = useState(false);
-  const messageId = useRef(0);
   const isPhone = useMediaQuery("(max-width: 639px)");
+
+  // Unread messages count only while the chat panel is closed.
+  const chatOpen = panel === "chat";
+  const reportChatOpen = useEffectEvent((open: boolean) => actions.setChatOpen(open));
+  useEffect(() => {
+    reportChatOpen(chatOpen);
+  }, [chatOpen]);
 
   // The server state drives the real tracks: a host mute also stops my microphone.
   // When the room closes (removed, ended, lost), the parent releases both devices.
@@ -106,7 +111,6 @@ export function MeetingRoom({
   }
 
   const selfId = me.id;
-  const selfName = me.display_name;
   // Only the host can end the meeting. The host and co-hosts can mute and remove people.
   const isHost = me.role === "host";
   const canModerate = me.role === "host" || me.role === "co_host";
@@ -117,7 +121,6 @@ export function MeetingRoom({
 
   function togglePanel(next: Exclude<Panel, null>) {
     setPanel((cur) => (cur === next ? null : next));
-    if (next === "chat") setUnread(0);
   }
 
   /**
@@ -134,12 +137,12 @@ export function MeetingRoom({
     }
     const result = await media.request([kind]);
     if (result[kind] === "ok") setOff(false);
-    else toast.show(`${DEVICE_NAME[kind]} not allowed. Allow it in the browser settings, then try again.`);
+    else toast.show(deviceToast(kind, result[kind]));
   }
 
   async function allowDevice(kind: MediaKind) {
     const result = await media.request([kind]);
-    if (result[kind] !== "ok") toast.show(`${DEVICE_NAME[kind]} not allowed. Allow it in the browser settings, then try again.`);
+    if (result[kind] !== "ok") toast.show(deviceToast(kind, result[kind]));
     else if (kind === "audio") toast.show("The microphone is ready. Click Unmute to talk.");
     else toast.show("The camera is ready. Click Start Video.");
   }
@@ -167,16 +170,10 @@ export function MeetingRoom({
     toast.show(ok ? "Invite link copied" : "Copy blocked by the browser");
   }
 
-  function sendMessage(text: string) {
-    messageId.current += 1;
-    const message: ChatMessage = {
-      id: messageId.current,
-      from: selfName,
-      to: "Everyone",
-      sent_at: new Date().toISOString(),
-      text,
-    };
-    setMessages((prev) => [...prev, message]);
+  function sendMessage(text: string, to: number | null) {
+    const sent = actions.sendChat(text, to);
+    if (!sent) toast.show("You are offline. Your message was not sent.");
+    return sent;
   }
 
   async function endForAll() {
@@ -276,7 +273,7 @@ export function MeetingRoom({
           panel={panel}
           participantCount={participants.length}
           panelOpen={panel !== null}
-          unreadChat={unread}
+          unreadChat={chat.unread}
           isHost={isHost}
           onToggleMic={() => void toggleDevice("audio")}
           onToggleCam={() => void toggleDevice("video")}
@@ -309,7 +306,13 @@ export function MeetingRoom({
         />
       ) : null}
       {panel === "chat" ? (
-        <ChatPanel messages={messages} selfName={selfName} onSend={sendMessage} onClose={() => setPanel(null)} />
+        <ChatPanel
+          messages={chat.messages}
+          participants={participants}
+          selfId={selfId}
+          onSend={sendMessage}
+          onClose={() => setPanel(null)}
+        />
       ) : null}
 
       <Modal

@@ -94,6 +94,7 @@ The counters are in memory (one server process) and use a sliding window. The cl
 | `POST /api/auth/demo` | 30 per minute per IP | `RATE_LIMIT_DEMO_PER_MINUTE` |
 | `POST /api/meetings/{code}/join` | 60 per minute per IP | `RATE_LIMIT_JOIN_PER_MINUTE` |
 | Wrong passcode | 10 per 5 minutes per IP and meeting code | `RATE_LIMIT_PASSCODE_FAILURES`, `RATE_LIMIT_PASSCODE_WINDOW_SECONDS` |
+| Chat message (WebSocket `error` `rate_limited`, not HTTP 429) | 10 per 10 seconds per participant | `CHAT_RATE_LIMIT_MESSAGES`, `CHAT_RATE_LIMIT_WINDOW_SECONDS` |
 
 - After 10 wrong passcodes, every join from that IP to that meeting gets 429, also with the right passcode. This stops when the oldest failure is 5 minutes old. Other meetings and other IPs are not affected.
 - `RATE_LIMIT_ENABLED=false` turns off all limits.
@@ -144,7 +145,7 @@ Each event is a JSON object with a `type` field. `Participant` is the REST shape
 
 | Event | Payload | Sent to |
 |---|---|---|
-| `snapshot` | `{participants: Participant[], connected_ids: number[]}` | The new socket. Always the first message. `participants` lists only the connected participants (not left, not removed, with an open socket), ordered by `joined_at`. `connected_ids` lists the same ids, ascending. It includes the new client. A client calls each id except its own (see Signaling). |
+| `snapshot` | `{participants: Participant[], connected_ids: number[], chat_history: ChatMessage[]}` | The new socket. Always the first message. `participants` lists only the connected participants (not left, not removed, with an open socket), ordered by `joined_at`. `connected_ids` lists the same ids, ascending. It includes the new client. A client calls each id except its own (see Signaling). `chat_history` holds the last 100 chat messages that this participant may see (see Chat), oldest first. |
 | `participant_joined` | `{participant}` | Everyone except the new participant. Sent when the first socket of a participant opens (the row has `left_at` null, or the socket brings it back). Not sent at REST join time. Not sent for a second socket of the same participant. |
 | `participant_left` | `{participant_id}` | Everyone. |
 | `participant_updated` | `{participant}` | Everyone. After `set_muted`, `set_video_off`, or a host mute. |
@@ -152,7 +153,8 @@ Each event is a JSON object with a `type` field. `Participant` is the REST shape
 | `you_were_removed` | `{participant_id}` | Only the removed participant. The server then closes its sockets. |
 | `meeting_ended` | `{}` | Everyone. The server then closes every socket. |
 | `signal` | `{from, data}` | Only the target of a client `signal`. See Signaling. |
-| `error` | `{code, detail}` | The sender of a bad client event. The socket stays open. `code` is `bad_event`, `bad_target` or `payload_too_large`. |
+| `chat` | `ChatMessage` | See Chat. A public message goes to everyone in the room, the sender too. A private one goes to the target and the sender only. |
+| `error` | `{code, detail}` | The sender of a bad client event. The socket stays open. `code` is `bad_event`, `bad_target`, `payload_too_large` or `rate_limited`. |
 
 A client must apply `participant_joined` and `participant_updated` as an upsert by `id`. An event can repeat data that the `snapshot` already has. (The frontend `useRoom` already does this.)
 
@@ -162,6 +164,7 @@ The types are strict. `value` must be JSON `true` or `false` (not `"yes"`, `1` o
 - `{"type": "set_video_off", "value": bool}`
 - `{"type": "leave"}`: the server closes every socket of this participant with code 1000.
 - `{"type": "signal", "to": <participant_id>, "data": <JSON object>}`: see Signaling.
+- `{"type": "chat", "text": "...", "to": null}`: see Chat. `to` is a participant id for a private message, or null (or missing) for everyone.
 
 ### Signaling (WebRTC relay)
 The server relays signaling messages (`offer`, `answer`, `ice` and so on) between two participants. It carries no media.
@@ -180,6 +183,20 @@ Error order for one message. The first rule that fails gives the result:
 3. The sender left or was removed: the server drops a `signal` and sends no reply.
 4. `data` is larger than 16 KB: `payload_too_large`.
 5. The target is not valid (see above): `bad_target`.
+
+### Chat
+Chat uses the meeting WebSocket. The server keeps the messages in memory only. It never writes them to the database.
+- Client to server: `{"type": "chat", "text": "...", "to": null}`. `to` must be a JSON integer or null.
+- Server to clients: `ChatMessage` = `{"type": "chat", "id": "<uuid>", "from": <participant_id>, "from_name": "...", "to": null | <participant_id>, "text": "...", "at": "<UTC ISO, for example 2026-01-01T10:00:00.000Z>"}`.
+- The server sets `from`, `from_name` and `at`. `from_name` is the `display_name` of the participant row. A `from` or `from_name` in the client message is ignored.
+- Text rules. The server removes control characters (a tab becomes a space, and the bidirectional override marks are removed too). It changes `\r\n` to `\n`, and it keeps the line feed. It trims the text and puts at most one empty line in a row. The result has 1 to 500 characters. An empty result gets `bad_event`. A longer result gets `payload_too_large`. The server does not change or escape markup: the client must show the text as plain text.
+- Public message (`to` is null): every socket in the room gets it, and the sender's sockets too. So the sender sees its own message when the echo comes back.
+- Private message (`to` is an id): only the sockets of the target and of the sender get it. `to` must name another participant who is in the room now (open socket, not left, not removed). If not, the sender gets `bad_target`. A message to yourself is `bad_target`.
+- Rate limit: `CHAT_RATE_LIMIT_MESSAGES` (10) per participant in `CHAT_RATE_LIMIT_WINDOW_SECONDS` (10). More gets `{"type": "error", "code": "rate_limited"}`. The socket stays open. `RATE_LIMIT_ENABLED=false` turns it off.
+- A participant who left or was removed cannot send. The server drops the message and sends no reply.
+- History: the server keeps the last 100 messages of a meeting. A new socket gets them in the `snapshot` as `chat_history` (oldest first). The list has the public messages and the private messages that were sent to or by this participant. The same participant on a second socket gets the same list. A message can be in `chat_history` and also arrive as a `chat` event (it was sent while the socket opened), so a client de-duplicates by `id`.
+- The server clears the messages of a meeting when the meeting ends (a host `end`, or the reaper). A restart of the server clears them all.
+- Error order for `chat`: raw message too large, then `bad_event` (not JSON or wrong types), then sender gone (dropped), then `rate_limited`, then text checks, then `bad_target`.
 
 ### Close codes
 The server accepts the socket first, then closes it with a code and a reason. This way a browser can read them. The reason is a machine code.

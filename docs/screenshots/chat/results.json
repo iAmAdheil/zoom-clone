@@ -1,0 +1,250 @@
+[
+  {
+    "name": "Participants button name is 'Participants, 3'",
+    "ok": true
+  },
+  {
+    "name": "empty state has no 'does not reach' text",
+    "ok": true,
+    "detail": "Meeting Chat\n\nNo messages yet.\n\nTo:\nEveryone\nAnn\nBen\n\nMessages are visible to everyone in the meeting"
+  },
+  {
+    "name": "public hint text",
+    "ok": true
+  },
+  {
+    "name": "To: menu lists Everyone, Ann, Ben",
+    "ok": true,
+    "detail": [
+      "Everyone",
+      "Ann",
+      "Ben"
+    ]
+  },
+  {
+    "name": "Ann's Chat button shows an unread badge",
+    "ok": true
+  },
+  {
+    "name": "Ben's Chat button shows an unread badge",
+    "ok": true
+  },
+  {
+    "name": "host sees own message as 'Me to Everyone'",
+    "ok": true
+  },
+  {
+    "name": "Ann sees the message with the host name",
+    "ok": true
+  },
+  {
+    "name": "badge is gone after Ann opens the panel",
+    "ok": true
+  },
+  {
+    "name": "Ann's Chat button is back to 'Chat'",
+    "ok": true
+  },
+  {
+    "name": "private hint text",
+    "ok": true
+  },
+  {
+    "name": "Ann sees the private message marked private",
+    "ok": true
+  },
+  {
+    "name": "Ben does not see the private message",
+    "ok": true
+  },
+  {
+    "name": "Ben's unread badge did not change",
+    "ok": true
+  },
+  {
+    "name": "Shift+Enter adds a line and does not send",
+    "ok": true
+  },
+  {
+    "name": "Enter sends the two-line message",
+    "ok": true,
+    "detail": "line one\nline two"
+  },
+  {
+    "name": "the box is empty after send",
+    "ok": true
+  },
+  {
+    "name": "markup is text in host",
+    "ok": true,
+    "detail": {
+      "scripts": 0,
+      "xss": null
+    }
+  },
+  {
+    "name": "markup is text in ann",
+    "ok": true,
+    "detail": {
+      "scripts": 0,
+      "xss": null
+    }
+  },
+  {
+    "name": "markup is text in ben",
+    "ok": true,
+    "detail": {
+      "scripts": 0,
+      "xss": null
+    }
+  },
+  {
+    "name": "the text shows unchanged",
+    "ok": true,
+    "detail": "<script>window.__xss=1</script><img src=x onerror=\"window.__xss=2\"> https://example.com/a?b=1&c=2"
+  },
+  {
+    "name": "no dialog opened",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "name": "rate limit shows a notice",
+    "ok": true
+  },
+  {
+    "name": "the box stops at 500 characters",
+    "ok": true
+  },
+  {
+    "name": "the list scrolls to the newest message",
+    "ok": true,
+    "detail": {
+      "top": 2254,
+      "client": 710,
+      "height": 2964
+    }
+  },
+  {
+    "name": "late joiner sees public history",
+    "ok": true
+  },
+  {
+    "name": "late joiner does not see the private message",
+    "ok": true
+  },
+  {
+    "name": "toolbar fits at 390px",
+    "ok": true,
+    "detail": {
+      "scrollW": 390,
+      "innerW": 390,
+      "barRight": 390,
+      "maxRight": 386,
+      "minLeft": 0
+    }
+  },
+  {
+    "name": "no tap target under 40 px high in the room at 390px (bar closed)",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "name": "More menu targets at 390px are at least 40 px high",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "name": "6 reaction buttons are 40x40 at 390px",
+    "ok": true,
+    "detail": [
+      "40x40",
+      "40x40",
+      "40x40",
+      "40x40",
+      "40x40",
+      "40x40"
+    ]
+  },
+  {
+    "name": "More menu is inside the screen at 390px",
+    "ok": true,
+    "detail": {
+      "left": 36.15625,
+      "right": 316.15625,
+      "w": 390
+    }
+  },
+  {
+    "name": "Leave menu (Cancel) targets at 390px are at least 40 px high",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "name": "toolbar fits at 412px",
+    "ok": true,
+    "detail": {
+      "scrollW": 412,
+      "innerW": 412,
+      "barRight": 412,
+      "maxRight": 408,
+      "minLeft": 0
+    }
+  },
+  {
+    "name": "no tap target under 40 px high in the room at 412px (bar closed)",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "name": "More menu targets at 412px are at least 40 px high",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "name": "6 reaction buttons are 40x40 at 412px",
+    "ok": true,
+    "detail": [
+      "40x40",
+      "40x40",
+      "40x40",
+      "40x40",
+      "40x40",
+      "40x40"
+    ]
+  },
+  {
+    "name": "More menu is inside the screen at 412px",
+    "ok": true,
+    "detail": {
+      "left": 47.15625,
+      "right": 327.15625,
+      "w": 412
+    }
+  },
+  {
+    "name": "Leave menu (Cancel) targets at 412px are at least 40 px high",
+    "ok": true,
+    "detail": []
+  },
+  {
+    "name": "Leave button is 40 px high on the phone",
+    "ok": true,
+    "detail": 40
+  },
+  {
+    "name": "End button keeps 36 px on desktop",
+    "ok": true,
+    "detail": 36
+  },
+  {
+    "name": "guest sees 'Passcode Required' and not the value",
+    "ok": true,
+    "detail": "Passcode QA\nMeeting ID\n852 3527 222\nHost\nDemo User\nPasscode\nRequired\nAccess\nGuests allowed\nInvite Link\n\nhttp://localhost:3400/j/8523527222\n\nCopy Link\nCopy Invitation\nEncryption\nEnabled"
+  },
+  {
+    "name": "host sees the passcode value",
+    "ok": true,
+    "detail": "Passcode QA\nMeeting ID\n852 3527 222\nHost\nDemo User\nPasscode\nabc123\nAccess\nGuests allowed\nInvite Link\n\nhttp://localhost:3400/j/8523527222?pwd=abc123\n\nCopy Link\nCopy Invitation\nEncryption\nEnabled"
+  }
+]

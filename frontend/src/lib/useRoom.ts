@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useEffectEvent, useReducer, useRef, useState } from "react";
 import { api } from "./api";
+import { chatErrorText, chatReducer, initialChat, type ChatState } from "./chat";
 import { rejoinTokens, useMeetingSession } from "./meetingStore";
 import { RoomSocket, type RoomStatus } from "./roomSocket";
 import type { Participant, ServerEvent } from "./types";
@@ -32,6 +33,10 @@ export type RoomActions = {
   endForAll: () => Promise<boolean>;
   /** After status "failed": try to connect again. */
   retry: () => void;
+  /** Sends a chat message. `to` is a participant id for a private message, null for everyone. False when offline. */
+  sendChat: (text: string, to: number | null) => boolean;
+  /** Tells the room that the chat panel is open or closed. Unread messages count while it is closed. */
+  setChatOpen: (open: boolean) => void;
 };
 
 /** Gets the `from` id and the raw `data` of each `signal` event. */
@@ -48,6 +53,8 @@ export type Room = {
   sendSignal: (to: number, data: Record<string, unknown>) => boolean;
   /** Subscribes to `signal` events. Returns the unsubscribe function. Stable. */
   onSignal: (listener: SignalListener) => () => void;
+  /** Chat messages, oldest first, at most 100. */
+  chat: ChatState;
 };
 
 type SelfState = Pick<Participant, "is_muted" | "is_video_off">;
@@ -108,6 +115,7 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
   const [participants, dispatch] = useReducer(roomReducer, session, (s) =>
     s ? [{ ...s.participant, is_muted: !s.micOn, is_video_off: !s.camOn }] : [],
   );
+  const [chat, dispatchChat] = useReducer(chatReducer, initialChat);
   const socketRef = useRef<RoomSocket | null>(null);
   // My latest mute and video state. Handlers read it before React renders again.
   const selfRef = useRef<SelfState>({ is_muted: !session?.micOn, is_video_off: !session?.camOn });
@@ -134,6 +142,7 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
         pendingEchoes.current = 0;
         dispatch({ type: "snapshot", participants: event.participants, selfId, self: selfRef.current });
         setConnectedIds(event.connected_ids);
+        dispatchChat({ type: "history", messages: event.chat_history ?? [], selfId });
         sendSelf(event.participants.find((p) => p.id === selfId));
         return;
       case "participant_joined":
@@ -161,9 +170,17 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
       case "signal":
         for (const listener of signalListeners) listener(event.from, event.data);
         return;
-      case "error":
+      case "chat": {
+        const { id, from, from_name, to, text, at } = event;
+        dispatchChat({ type: "message", message: { id, from, from_name, to, text, at }, selfId });
+        return;
+      }
+      case "error": {
+        const text = chatErrorText(event.code);
+        if (text) notify(text);
         console.warn(`Room event refused: ${event.code}: ${event.detail}`);
         return;
+      }
       default:
         // you_were_removed and meeting_ended change the status (see RoomSocket).
         return;
@@ -242,7 +259,9 @@ export function useRoom(code: string, onNotice?: (message: string) => void): Roo
     },
     endForAll: () => attempt(() => api.endMeeting(code)),
     retry: () => socketRef.current?.retry(),
+    sendChat: (text, to) => socketRef.current?.send({ type: "chat", text, to }) ?? false,
+    setChatOpen: (open) => dispatchChat({ type: "panel", open }),
   };
 
-  return { participants, me, status, actions, connectedIds, sendSignal, onSignal };
+  return { participants, me, status, actions, connectedIds, sendSignal, onSignal, chat };
 }

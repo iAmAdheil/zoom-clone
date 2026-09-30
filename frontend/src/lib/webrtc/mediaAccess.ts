@@ -84,7 +84,7 @@ function problem(kind: MediaKind, status: DeviceStatus): string | null {
     case "missing":
       return `No ${NAME[kind]} was found.`;
     case "busy":
-      return `Another app is using the ${NAME[kind]}.`;
+      return `The ${NAME[kind]} is used by another app.`;
     case "unsupported":
       return `This browser cannot use a ${NAME[kind]}.`;
     default:
@@ -92,10 +92,22 @@ function problem(kind: MediaKind, status: DeviceStatus): string | null {
   }
 }
 
+/**
+ * The toast after a tap on Mute or Start Video when the device did not open.
+ * A busy device (NotReadableError) is not a blocked one: the fix is to close the other app.
+ */
+export function deviceToast(kind: MediaKind, status: DeviceStatus): string {
+  const name = NAME[kind];
+  if (status === "busy") return `The ${name} is used by another app. Close that app, then try again.`;
+  if (status === "missing") return `No ${name} was found.`;
+  if (status === "unsupported") return `This browser cannot use a ${name}.`;
+  return `The ${name} is not allowed. Allow it in the browser settings, then try again.`;
+}
+
 const BOTH: Partial<Record<DeviceStatus, string>> = {
   blocked: "The camera and microphone are blocked.",
   missing: "No camera or microphone was found.",
-  busy: "Another app is using the camera and microphone.",
+  busy: "The camera and microphone are used by another app.",
   unsupported: "This browser cannot use a camera or microphone.",
 };
 

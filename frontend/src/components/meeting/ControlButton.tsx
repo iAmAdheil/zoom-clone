@@ -55,6 +55,7 @@ export function ControlButton({
         )}
         {badge !== undefined ? (
           <span
+            aria-hidden="true"
             className={cn(
               "absolute -top-1.5 -right-3 min-w-4 text-center text-2xs leading-4",
               badgeTone === "alert" ? "rounded-full bg-danger px-1 font-bold text-white" : "text-room-text",

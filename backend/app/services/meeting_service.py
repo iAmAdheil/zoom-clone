@@ -20,6 +20,7 @@ from app.models import (
 from app.schemas.meeting import InstantMeetingIn, JoinIn, MeetingPatch, ScheduleMeetingIn
 from app.schemas.participant import ParticipantOut
 from app.services import rate_limit
+from app.services.chat_history import chat_history
 from app.services.presence import pending_joins
 from app.services.room_manager import CLOSE_MEETING_ENDED, room_manager
 
@@ -241,6 +242,7 @@ def finish_meeting(db: Session, meeting: Meeting) -> Meeting:
         p.left_at = ended
     db.commit()
     db.refresh(meeting)
+    chat_history.clear(meeting.meeting_code)
     room_manager.broadcast(meeting.meeting_code, {"type": "meeting_ended"})
     room_manager.close_room(meeting.meeting_code, CLOSE_MEETING_ENDED, "meeting_ended")
     return meeting

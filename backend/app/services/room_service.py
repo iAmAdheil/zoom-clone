@@ -4,7 +4,10 @@ Each function gets a short-lived session from the router. The router closes it.
 """
 
 import json
+import re
+import uuid
 from dataclasses import dataclass
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
@@ -12,7 +15,9 @@ from app.core.errors import AppError
 from app.core.security import verify_ws_ticket
 from app.models import Meeting, MeetingStatus, Participant
 from app.schemas.participant import ParticipantOut
-from app.schemas.ws import SetMuted, SetVideoOff, Signal
+from app.schemas.ws import Chat, SetMuted, SetVideoOff, Signal
+from app.services import rate_limit
+from app.services.chat_history import chat_history
 from app.services.meeting_service import get_by_code, joined_event, now
 from app.services.participant_service import list_connected, updated_event
 from app.services.presence import pending_joins
@@ -23,6 +28,13 @@ from app.services.ticket_registry import used_tickets
 MAX_SIGNAL_BYTES = 16 * 1024
 # The most bytes a raw client message may have before the server parses it.
 MAX_MESSAGE_BYTES = MAX_SIGNAL_BYTES + 1024
+# A chat text has 1 to this many characters, after the server trims it and cleans it.
+MAX_CHAT_CHARS = 500
+
+# Control characters (category Cc) except the line feed, and the bidi override marks, which
+# can flip the order of the text around them. The zero width joiner stays: emoji need it.
+_CONTROL = re.compile("[\x00-\x09\x0b-\x1f\x7f-\x9f‪-‮⁦-⁩]")
+_MANY_BREAKS = re.compile(r"\n{3,}")
 
 
 @dataclass(frozen=True)
@@ -87,6 +99,7 @@ def enter_room(db: Session, seat: Seat, first_socket: bool) -> dict:
         "type": "snapshot",
         "connected_ids": [p.id for p in sorted(present, key=lambda p: p.id)],
         "participants": [ParticipantOut.model_validate(p).model_dump(mode="json") for p in present],
+        "chat_history": chat_history.visible_to(seat.meeting_code, participant.id),
     }
 
 
@@ -155,4 +168,69 @@ def relay_signal(db: Session, seat: Seat, event: Signal) -> dict | None:
         event.to,
         {"type": "signal", "from": seat.participant_id, "data": event.data},
     )
+    return None
+
+
+def clean_chat_text(raw: str) -> str:
+    """Remove control characters (a tab becomes a space), fix line breaks, and trim."""
+    text = raw.replace("\r\n", "\n").replace("\r", "\n").replace("\t", " ")
+    text = _CONTROL.sub("", text).strip()
+    return _MANY_BREAKS.sub("\n\n", text)
+
+
+def _utc_iso(moment: datetime) -> str:
+    return moment.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def send_chat(db: Session, seat: Seat, event: Chat) -> dict | None:
+    """Check a chat message and send it. Return an `error` event for the sender, or None.
+
+    Order (the first rule that fails gives the result):
+    1. The sender left or was removed: drop it, no reply (like `signal`).
+    2. More than the rate limit: `rate_limited`.
+    3. The text is empty after cleaning: `bad_event`. Longer than 500 characters:
+       `payload_too_large`.
+    4. A private target that is not in the room, or is the sender: `bad_target`.
+
+    The server sets `from` and `from_name` from the participant row. The client cannot.
+    A public message goes to every socket in the room, the sender's sockets too, so all
+    tabs of the sender show it. A private message goes to the target and to the sender only.
+    """
+    sender = db.get(Participant, seat.participant_id)
+    if sender is None or sender.meeting_id != seat.meeting_id:
+        return None
+    if sender.removed or sender.left_at is not None:
+        return None
+    wait = rate_limit.check_chat(seat.meeting_id, sender.id)
+    if wait:
+        return error_event("rate_limited", "You send messages too fast. Wait a moment.")
+    text = clean_chat_text(event.text)
+    if not text:
+        return error_event("bad_event", "The message is empty.")
+    if len(text) > MAX_CHAT_CHARS:
+        return error_event(
+            "payload_too_large", f"The message is longer than {MAX_CHAT_CHARS} characters."
+        )
+    if event.to is not None and (
+        event.to == sender.id
+        or event.to not in connected_ids(seat.meeting_code)
+        or not _in_room(db, seat, event.to)
+    ):
+        return error_event("bad_target", "The target is not connected to this meeting.")
+
+    message = {
+        "type": "chat",
+        "id": str(uuid.uuid4()),
+        "from": sender.id,
+        "from_name": sender.display_name,
+        "to": event.to,
+        "text": text,
+        "at": _utc_iso(now()),
+    }
+    chat_history.add(seat.meeting_code, message)
+    if event.to is None:
+        room_manager.broadcast(seat.meeting_code, message)
+    else:
+        room_manager.send_to_participant(seat.meeting_code, event.to, message)
+        room_manager.send_to_participant(seat.meeting_code, sender.id, message)
     return None

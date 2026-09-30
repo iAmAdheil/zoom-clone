@@ -35,8 +35,20 @@ class Signal(_Strict):
     data: dict[str, Any]
 
 
-ClientEvent = Annotated[SetMuted | SetVideoOff | Leave | Signal, Field(discriminator="type")]
+class Chat(_Strict):
+    """A chat message. `to` is a participant id for a private message, null for everyone.
 
-client_event_adapter: TypeAdapter[SetMuted | SetVideoOff | Leave | Signal] = TypeAdapter(
+    The server checks the text (trim, length, control characters) in room_service, so a bad
+    text gets a clear error and not `bad_event`.
+    """
+
+    type: Literal["chat"]
+    text: str
+    to: int | None = None
+
+
+ClientEvent = Annotated[SetMuted | SetVideoOff | Leave | Signal | Chat, Field(discriminator="type")]
+
+client_event_adapter: TypeAdapter[SetMuted | SetVideoOff | Leave | Signal | Chat] = TypeAdapter(
     ClientEvent
 )

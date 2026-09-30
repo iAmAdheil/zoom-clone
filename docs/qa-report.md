@@ -224,6 +224,7 @@ The lead's main concern, media, passed: every pair in a 5-person room and in a 6
 - Expected: Alice sees the message, or the panel says clearly that chat is local.
 - Actual: Alice has no messages. The empty state says "Chat does not reach the others yet", but after a message is sent, the footer still says "Who can see your messages? Everyone in the meeting."
 - Evidence: `docs/qa/room-chat-390.png`, `results/t4_room.json`.
+- Fixed: chat now works over the meeting WebSocket (see `docs/api.md`, "Chat"). Evidence: `docs/screenshots/chat/`, `qa/t10_chat.mjs`.
 
 #### BUG-07: A signed-in user who clicks Join at once is told "Enter your name" while the name is shown
 - Steps: as Bob (signed in), open `/j/<code>` and click Join before `/api/me` returns.
@@ -264,6 +265,7 @@ The lead's main concern, media, passed: every pair in a 5-person room and in a 6
 #### BUG-13: Tap targets under 40 px on the phone
 - Examples at 390x844: remember-name checkbox 16x16, "Meeting information" 32x32, End/Leave 48x36, panel Close 30x30, row Mute 51x28 and Remove 66x28, Invite, Mute All and More 32 px high, chat Send 30x30, reactions 32x40, dashboard copy-invite 30x30, Start and Join 32 px high, profile 32x32, header "Join a meeting" and "Back to Home" 32 px high, footer link 15 px high.
 - Evidence: `results/t7_responsive.json` (`smallTapTargets`), `docs/qa/*-390.png`.
+- Fixed: End, Leave, Cancel and the reaction buttons are at least 40 px high on phones. Checked at 390 and 412 px (`qa/t10_chat.mjs`).
 
 #### BUG-14: Color contrast below WCAG AA (axe "serious")
 - Dashboard: 22 nodes. White initials on teal avatar (#00a39e) have a ratio of 3.11. The "Guests allowed" badge (#0e72ed on #e8f…) has 3.96.
@@ -298,6 +300,7 @@ The lead's main concern, media, passed: every pair in a 5-person room and in a 6
 #### BUG-20: A busy camera is reported as "No camera is available"
 - With `NotReadableError` on video, the pre-join says "No camera is available. You join with the microphone only." The camera exists but is busy.
 - Evidence: `docs/qa/prejoin-camera-busy-1280.png`.
+- Fixed: a busy camera now says "The camera is used by another app".
 
 #### BUG-21: The WebSocket accepts loose types, and error order differs from the spec
 - `{"type":"set_muted","value":"yes"}` is accepted as `true` (Pydantic lax mode), so it gets `participant_updated`, not `bad_event`.
@@ -307,6 +310,7 @@ The lead's main concern, media, passed: every pair in a 5-person room and in a 6
 #### BUG-22: The Participants button's accessible name starts with the count
 - Screen readers read "5 Participants" (the badge is before the label in the DOM).
 - Evidence: `results/t8_a11y.json`.
+- Fixed: the name is now "Participants, 3".
 
 #### BUG-23: A meeting code with letters mixed in is accepted
 - `GET /api/meetings/43984abc18723` finds meeting `4398418723`, because all non-digits are stripped. Links from other hosts (`https://us05web.zoom.us/j/<digits>`) are also taken as this app's meeting ID.

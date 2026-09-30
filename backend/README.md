@@ -41,6 +41,8 @@ Optional tuning. The defaults suit one small server.
 | `RATE_LIMIT_JOIN_PER_MINUTE` | `60` | Joins per minute per IP. |
 | `RATE_LIMIT_PASSCODE_FAILURES` | `10` | Wrong passcodes per IP and meeting in the window below. |
 | `RATE_LIMIT_PASSCODE_WINDOW_SECONDS` | `300` | The window for wrong passcodes. |
+| `CHAT_RATE_LIMIT_MESSAGES` | `10` | Chat messages per participant in the window below. |
+| `CHAT_RATE_LIMIT_WINDOW_SECONDS` | `10` | The window for chat messages. |
 | `TRUST_FORWARDED_FOR` | `true` | Take the client IP from the first `X-Forwarded-For` entry (Render sets it). |
 
 ## Google sign-in
