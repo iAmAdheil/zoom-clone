@@ -1,0 +1,245 @@
+[
+  {
+    "name": "perf: dashboard is usable (lists loaded) in under 2 s on localhost",
+    "pass": true,
+    "evidence": {
+      "runs": [
+        {
+          "listsReadyMs": 500,
+          "ttfb": 50,
+          "domContentLoaded": 198,
+          "load": 198,
+          "jsFiles": 9,
+          "jsBytes": 175127,
+          "apiCalls": [
+            "/api/me 144ms",
+            "/api/meetings/upcoming 33ms",
+            "/api/meetings/recent 40ms"
+          ]
+        },
+        {
+          "listsReadyMs": 100,
+          "ttfb": 3,
+          "domContentLoaded": 12,
+          "load": 24,
+          "jsFiles": 9,
+          "jsBytes": 175127,
+          "apiCalls": [
+            "/api/me 10ms",
+            "/api/meetings/upcoming 13ms",
+            "/api/meetings/recent 27ms"
+          ]
+        },
+        {
+          "listsReadyMs": 81,
+          "ttfb": 8,
+          "domContentLoaded": 15,
+          "load": 22,
+          "jsFiles": 9,
+          "jsBytes": 175127,
+          "apiCalls": [
+            "/api/me 24ms",
+            "/api/meetings/upcoming 11ms",
+            "/api/meetings/recent 16ms"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "perf: no single JS chunk over 300 KB (uncompressed) in .next/static/chunks",
+    "pass": true,
+    "evidence": {
+      "totalKb": 752,
+      "count": 14,
+      "largest": [
+        {
+          "f": "1k__zuwipnzw8.js",
+          "kb": 224
+        },
+        {
+          "f": "1z99mlp5cofct.js",
+          "kb": 172
+        },
+        {
+          "f": "0cz1d0mv5g_q7.js",
+          "kb": 110
+        },
+        {
+          "f": "2llsigzq7wj94.js",
+          "kb": 48
+        },
+        {
+          "f": "1sq49hhkkmy__.js",
+          "kb": 40
+        },
+        {
+          "f": "2tkd1p6qh7mq1.js",
+          "kb": 34
+        }
+      ]
+    }
+  },
+  {
+    "name": "data: foreign keys exist (meetings.host_id, participants.meeting_id, participants.user_id)",
+    "pass": true,
+    "evidence": {
+      "participantsFk": [
+        "user_id->users.id on_delete=NO ACTION",
+        "meeting_id->meetings.id on_delete=NO ACTION"
+      ],
+      "meetingsFk": [
+        "host_id->users.id on_delete=NO ACTION"
+      ]
+    }
+  },
+  {
+    "name": "data: PRAGMA foreign_key_check finds no broken references",
+    "pass": true,
+    "evidence": {
+      "fkErrors": []
+    }
+  },
+  {
+    "name": "data: indexes: meeting_code unique, (host_id, scheduled_start), participants.meeting_id; participants.user_id has none",
+    "pass": false,
+    "evidence": {
+      "indexes": [
+        "alembic_version.sqlite_autoindex_alembic_version_1",
+        "users.sqlite_autoindex_users_1",
+        "users.sqlite_autoindex_users_2",
+        "meetings.ix_meetings_host_id_scheduled_start",
+        "meetings.ix_meetings_meeting_code",
+        "participants.ix_participants_meeting_id"
+      ]
+    }
+  },
+  {
+    "name": "data: every ended meeting has ended_at",
+    "pass": true,
+    "evidence": {
+      "count": 0,
+      "sample": []
+    }
+  },
+  {
+    "name": "data: no open participant rows (left_at NULL) in ended meetings",
+    "pass": true,
+    "evidence": {
+      "meetings": []
+    }
+  },
+  {
+    "name": "data: no orphan participant rows after cancels (meeting deleted)",
+    "pass": true,
+    "evidence": {
+      "orphans": []
+    }
+  },
+  {
+    "name": "data: every removed participant has left_at",
+    "pass": true,
+    "evidence": {
+      "removedOpen": []
+    }
+  },
+  {
+    "name": "data: live meetings that nobody ends (host left without ending, no auto-end) (info)",
+    "pass": null,
+    "evidence": {
+      "liveCount": 0,
+      "sample": []
+    }
+  },
+  {
+    "name": "data: open participant rows in live meetings right now (includes REST-only ghosts) (info)",
+    "pass": null,
+    "evidence": {
+      "n": 0
+    }
+  },
+  {
+    "name": "data: enum values in use (no co_host rows expected)",
+    "pass": true,
+    "evidence": {
+      "enums": [
+        {
+          "status": "scheduled",
+          "type": "scheduled",
+          "access": "allow_guests"
+        },
+        {
+          "status": "scheduled",
+          "type": "scheduled",
+          "access": "verified_only"
+        },
+        {
+          "status": "ended",
+          "type": "scheduled",
+          "access": "allow_guests"
+        },
+        {
+          "status": "ended",
+          "type": "instant",
+          "access": "allow_guests"
+        },
+        {
+          "status": "ended",
+          "type": "instant",
+          "access": "verified_only"
+        }
+      ],
+      "roles": [
+        {
+          "role": "attendee",
+          "n": 122
+        },
+        {
+          "role": "host",
+          "n": 22
+        }
+      ]
+    }
+  },
+  {
+    "name": "data: exactly one demo user",
+    "pass": true,
+    "evidence": {
+      "seedDemo": [
+        {
+          "id": 1,
+          "email": "demo@zoomclone.test",
+          "is_demo": 1
+        }
+      ]
+    }
+  },
+  {
+    "name": "data: time zones stored (instant meetings use UTC) (info)",
+    "pass": null,
+    "evidence": {
+      "tz": [
+        {
+          "timezone": "Asia/Kolkata",
+          "n": 7
+        },
+        {
+          "timezone": "UTC",
+          "n": 25
+        }
+      ]
+    }
+  },
+  {
+    "name": "data: meeting codes are unique and 10 digits",
+    "pass": true,
+    "evidence": {}
+  },
+  {
+    "name": "data: SQLite journal mode (WAL helps concurrent readers) (info)",
+    "pass": null,
+    "evidence": {
+      "journal_mode": "[{\"journal_mode\":\"delete\"}]"
+    }
+  }
+]

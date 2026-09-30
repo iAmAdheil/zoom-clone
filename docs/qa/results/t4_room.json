@@ -1,0 +1,524 @@
+{
+  "code": "6186819637",
+  "rows": [
+    {
+      "name": "room: all 5 contexts show the same 5 participant ids as the server",
+      "pass": true,
+      "evidence": {
+        "server": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ],
+        "host": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ],
+        "alice": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ],
+        "g1": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ],
+        "g2": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ],
+        "phone": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ]
+      }
+    },
+    {
+      "name": "media: each of 5 contexts has 4 remote videos (videoWidth>0, pixels change) and 4 connected PCs with inbound audio growth",
+      "pass": true,
+      "evidence": {
+        "host": {
+          "remoteTiles": 4,
+          "videosWithSize": 4,
+          "videosMoving": 4,
+          "pcsConnected": 4,
+          "pcsWithAudioGrowth": 4,
+          "pcsWithVideoFrames": 4,
+          "audioElements": 4,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=20232",
+            "320x180 diff=21558",
+            "320x180 diff=21556",
+            "320x180 diff=21584"
+          ]
+        },
+        "alice": {
+          "remoteTiles": 4,
+          "videosWithSize": 4,
+          "videosMoving": 4,
+          "pcsConnected": 4,
+          "pcsWithAudioGrowth": 4,
+          "pcsWithVideoFrames": 4,
+          "audioElements": 4,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=22980",
+            "320x180 diff=24234",
+            "320x180 diff=22941",
+            "320x180 diff=24223"
+          ]
+        },
+        "g1": {
+          "remoteTiles": 4,
+          "videosWithSize": 4,
+          "videosMoving": 4,
+          "pcsConnected": 4,
+          "pcsWithAudioGrowth": 4,
+          "pcsWithVideoFrames": 4,
+          "audioElements": 4,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=24457",
+            "320x180 diff=24457",
+            "320x180 diff=24490",
+            "320x180 diff=24542"
+          ]
+        },
+        "g2": {
+          "remoteTiles": 4,
+          "videosWithSize": 4,
+          "videosMoving": 4,
+          "pcsConnected": 4,
+          "pcsWithAudioGrowth": 4,
+          "pcsWithVideoFrames": 4,
+          "audioElements": 4,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=49818",
+            "320x180 diff=49818",
+            "320x180 diff=49732",
+            "320x180 diff=49863"
+          ]
+        },
+        "phone": {
+          "remoteTiles": 4,
+          "videosWithSize": 4,
+          "videosMoving": 4,
+          "pcsConnected": 4,
+          "pcsWithAudioGrowth": 4,
+          "pcsWithVideoFrames": 4,
+          "audioElements": 4,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=21631",
+            "320x180 diff=21631",
+            "320x180 diff=21631",
+            "320x180 diff=20277"
+          ]
+        }
+      }
+    },
+    {
+      "name": "xss: <script>/<img onerror> name renders as text in panel and tiles, no dialog fired",
+      "pass": true,
+      "evidence": {
+        "dialogs": [],
+        "injectedImgs": 0
+      }
+    },
+    {
+      "name": "room: API role values",
+      "pass": true,
+      "evidence": {
+        "roles": [
+          "Demo User=host",
+          "Alice Nguyen=attendee",
+          "Guest One=attendee",
+          "<script>alert(1)</sc=attendee",
+          "Phone Guest=attendee"
+        ]
+      }
+    },
+    {
+      "name": "room: no co_host role in use and no UI to make one",
+      "pass": true,
+      "evidence": {}
+    },
+    {
+      "name": "room: non-host sees no Mute All, no row Mute/Remove, no End",
+      "pass": true,
+      "evidence": {
+        "muteAll": 0,
+        "rowBtns": 0,
+        "endBtn": 0
+      }
+    },
+    {
+      "name": "room: non-host (Alice) gets 403 and guest gets 401 on mute, mute-all, remove, end, patch, delete",
+      "pass": true,
+      "evidence": {
+        "alice POST /api/meetings/{code}/participants/111/mute": 403,
+        "guest POST /api/meetings/{code}/participants/111/mute": 401,
+        "alice POST /api/meetings/{code}/mute-all": 403,
+        "guest POST /api/meetings/{code}/mute-all": 401,
+        "alice POST /api/meetings/{code}/participants/111/remove": 403,
+        "guest POST /api/meetings/{code}/participants/111/remove": 401,
+        "alice POST /api/meetings/{code}/end": 403,
+        "guest POST /api/meetings/{code}/end": 401,
+        "alice PATCH /api/meetings/22": 403,
+        "guest PATCH /api/meetings/22": 401,
+        "alice DELETE /api/meetings/22": 403,
+        "guest DELETE /api/meetings/22": 401
+      }
+    },
+    {
+      "name": "media: self mute shows the muted icon on the 4 others",
+      "pass": true,
+      "evidence": {
+        "g1id": 111,
+        "seenLabels": [
+          "Guest One, muted",
+          "Guest One, muted",
+          "Guest One, muted",
+          "Guest One, muted"
+        ]
+      }
+    },
+    {
+      "name": "media: self mute stops the audio for real (sender bytes 0, host inbound from guest ~0)",
+      "pass": true,
+      "evidence": {
+        "hostInboundBeforeMute": {
+          "delta": 7467
+        },
+        "senderOutAudioBytesWhileMuted": 0,
+        "hostInboundWhileMuted": {
+          "delta": 0
+        }
+      }
+    },
+    {
+      "name": "media: unmute brings audio back",
+      "pass": true,
+      "evidence": {
+        "hostInboundAfterUnmute": {
+          "delta": 7448
+        }
+      }
+    },
+    {
+      "name": "media: video off shows the avatar on others and stops sending frames",
+      "pass": true,
+      "evidence": {
+        "hostTile": {
+          "label": "Guest One, video off",
+          "video": false
+        },
+        "senderFrames": 0
+      }
+    },
+    {
+      "name": "media: video on again shows the picture on others",
+      "pass": true,
+      "evidence": {
+        "videoWidth": 320
+      }
+    },
+    {
+      "name": "room: host mutes one guest; guest sees toast + Unmute button; audio stops; others see muted",
+      "pass": true,
+      "evidence": {
+        "muteReq": {
+          "url": "/api/meetings/6186819637/participants/111/mute",
+          "status": 200
+        },
+        "toast": true,
+        "unmuteButton": 1,
+        "senderAudioBytes": 0,
+        "others": [
+          "Guest One, muted",
+          "Guest One, muted",
+          "Guest One, muted"
+        ]
+      }
+    },
+    {
+      "name": "media: 20 fast mute clicks end unmuted everywhere (UI, server, others, audio)",
+      "pass": true,
+      "evidence": {
+        "localButton": "Mute",
+        "serverMuted": false,
+        "hostLabel": "<script>alert(1)</script><img src=x onerror=alert(2)>",
+        "senderAudioBytes": 30455
+      }
+    },
+    {
+      "name": "room: mute all mutes every attendee (server + phone UI + phone audio), host stays unmuted",
+      "pass": true,
+      "evidence": {
+        "muteAllResp": {
+          "status": 200,
+          "muted": [
+            110,
+            111,
+            112,
+            113
+          ]
+        },
+        "server": [
+          "109:false",
+          "110:true",
+          "111:true",
+          "112:true",
+          "113:true"
+        ],
+        "phoneUnmuteButton": 1,
+        "phoneAudioBytes": 0
+      }
+    },
+    {
+      "name": "room: guest reload rejoins with the same id and no duplicate tile",
+      "pass": true,
+      "evidence": {
+        "before": 111,
+        "after": 111,
+        "hostIds": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ],
+        "g1ids": [
+          109,
+          110,
+          111,
+          112,
+          113
+        ]
+      }
+    },
+    {
+      "name": "media: after reload the guest gets 4 remote videos again",
+      "pass": true,
+      "evidence": {
+        "remoteTiles": 4,
+        "videosWithSize": 4,
+        "videosMoving": 4,
+        "pcsConnected": 4,
+        "pcsWithAudioGrowth": 4,
+        "pcsWithVideoFrames": 4,
+        "audioElements": 4,
+        "audioPaused": 0,
+        "detail": [
+          "320x180 diff=46606",
+          "320x180 diff=47365",
+          "320x180 diff=47404",
+          "320x180 diff=47439"
+        ]
+      }
+    },
+    {
+      "name": "media: late joiner (6th) gets 5 remote videos + audio; host and phone get 5",
+      "pass": true,
+      "evidence": {
+        "bob": {
+          "remoteTiles": 5,
+          "videosWithSize": 5,
+          "videosMoving": 5,
+          "pcsConnected": 5,
+          "pcsWithAudioGrowth": 5,
+          "pcsWithVideoFrames": 5,
+          "audioElements": 5,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=20294",
+            "320x180 diff=20294",
+            "320x180 diff=20287",
+            "320x180 diff=21613",
+            "320x180 diff=20299"
+          ]
+        },
+        "host": {
+          "remoteTiles": 5,
+          "videosWithSize": 5,
+          "videosMoving": 5,
+          "pcsConnected": 5,
+          "pcsWithAudioGrowth": 5,
+          "pcsWithVideoFrames": 5,
+          "audioElements": 5,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=22780",
+            "320x180 diff=21744",
+            "320x180 diff=21690",
+            "320x180 diff=24163",
+            "320x180 diff=24157"
+          ]
+        },
+        "phone": {
+          "remoteTiles": 5,
+          "videosWithSize": 5,
+          "videosMoving": 5,
+          "pcsConnected": 5,
+          "pcsWithAudioGrowth": 5,
+          "pcsWithVideoFrames": 5,
+          "audioElements": 5,
+          "audioPaused": 0,
+          "detail": [
+            "320x180 diff=23123",
+            "320x180 diff=24430",
+            "320x180 diff=49329",
+            "320x180 diff=24471",
+            "320x180 diff=24475"
+          ]
+        }
+      }
+    },
+    {
+      "name": "chat: a message from the host reaches other participants",
+      "pass": false,
+      "evidence": {
+        "aliceChat": "Meeting Chat\n\nNo messages yet. Chat does not reach the others yet. Your messages stay in this window.\n\nTo:\nEveryone\n\nWho can see your messages? Everyone in the meeting."
+      }
+    },
+    {
+      "name": "room: invite popover shows 3-4-3 ID and link",
+      "pass": true,
+      "evidence": {
+        "text": "Invite people\n\nMeeting ID\n618 6819 637\n\nhttp://localhost:3000/j/6186819637\n\nCopy Link\nCopy Invitation"
+      }
+    },
+    {
+      "name": "room: removed guest sees the removed page and leaves every list",
+      "pass": true,
+      "evidence": {
+        "hostIds": [
+          109,
+          110,
+          111,
+          113,
+          114
+        ]
+      }
+    },
+    {
+      "name": "media: removed guest's camera and mic are released",
+      "pass": true,
+      "evidence": {
+        "tracks": [
+          "ended",
+          "ended"
+        ]
+      }
+    },
+    {
+      "name": "room: removed guest cannot rejoin from the same tab",
+      "pass": true,
+      "evidence": {
+        "url": "http://localhost:3000/j/6186819637",
+        "msg": "The host removed you from this meeting. You cannot join it again."
+      }
+    },
+    {
+      "name": "room: removed guest can come back with a fresh join (no token): expected blocked",
+      "pass": false,
+      "evidence": {
+        "status": 200,
+        "newParticipantId": 115,
+        "oldParticipantId": 112
+      }
+    },
+    {
+      "name": "realtime: REST join without socket shows a ghost tile to others",
+      "pass": false,
+      "evidence": {
+        "ghostVisibleOnHost": true
+      }
+    },
+    {
+      "name": "room: guest leave removes the tile for others; lands on /join",
+      "pass": true,
+      "evidence": {
+        "url": "http://localhost:3000/join"
+      }
+    },
+    {
+      "name": "media: leaving releases the camera and mic (all tracks ended) and closes PCs",
+      "pass": true,
+      "evidence": {
+        "tracks": [
+          "ended",
+          "ended"
+        ],
+        "pcs": [
+          "closed",
+          "closed",
+          "closed",
+          "closed",
+          "closed",
+          "closed"
+        ]
+      }
+    },
+    {
+      "name": "room: host leaves without ending: meeting stays live, others stay",
+      "pass": true,
+      "evidence": {
+        "status": "live",
+        "aliceIds": [
+          110,
+          111,
+          114
+        ]
+      }
+    },
+    {
+      "name": "room: host End for All: every participant sees Meeting ended; API status ended",
+      "pass": true,
+      "evidence": {
+        "seen": {
+          "alice": true,
+          "g1": true,
+          "bob": true
+        },
+        "hostSees": "zoom\nYou ended the meeting for everyone\n\nQA room\n\nBack to Home\n© 2026 Zoom clone",
+        "status": "ended"
+      }
+    },
+    {
+      "name": "media: meeting end releases the guest camera and mic",
+      "pass": true,
+      "evidence": {
+        "tracks": [
+          "ended",
+          "ended"
+        ]
+      }
+    },
+    {
+      "name": "xss: no alert() fired in any context during the whole run",
+      "pass": true,
+      "evidence": {
+        "dialogs": []
+      }
+    }
+  ]
+}

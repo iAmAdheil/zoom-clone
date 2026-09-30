@@ -1,0 +1,18 @@
+[
+  {
+    "name": "probe: non-host calls give 403 only, and 30 parallel host mutes give no 5xx",
+    "pass": true,
+    "evidence": {
+      "seq": {
+        "403": 10
+      },
+      "parallel": {
+        "403": 40
+      },
+      "hostParallelMute": {
+        "200": 30
+      },
+      "sample500": null
+    }
+  }
+]

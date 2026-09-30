@@ -1,0 +1,36 @@
+[
+  {
+    "name": "burst: 400 parallel demo logins all succeed and /api/health stays fast",
+    "pass": false,
+    "evidence": {
+      "counts": {
+        "200": 61,
+        "500": 339
+      },
+      "totalMs": 270537,
+      "sample": {
+        "status": 500,
+        "body": "Internal Server Error"
+      },
+      "healthProbes": 17,
+      "healthSlowOrFailed": [
+        "timeout 15013ms",
+        "timeout 15010ms",
+        "timeout 15014ms",
+        "timeout 15009ms",
+        "timeout 15006ms",
+        "timeout 15009ms",
+        "timeout 15019ms",
+        "timeout 15011ms",
+        "timeout 15005ms",
+        "timeout 15011ms",
+        "timeout 15006ms",
+        "timeout 15007ms",
+        "timeout 15004ms",
+        "timeout 15013ms",
+        "timeout 15010ms",
+        "200 13245ms"
+      ]
+    }
+  }
+]

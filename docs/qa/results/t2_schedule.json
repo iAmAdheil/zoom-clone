@@ -1,0 +1,140 @@
+{
+  "rows": [
+    {
+      "name": "schedule: valid form (all fields) creates the meeting with the right values",
+      "pass": true,
+      "evidence": {
+        "got": {
+          "start": "2026-10-01T04:30:00Z",
+          "duration": 90,
+          "tz": "Asia/Kolkata",
+          "passcode": "Ab1@*_-",
+          "access": "verified_only",
+          "description": "Agenda: test every field."
+        },
+        "expectedStart": "2026-10-01T04:30:00.000Z",
+        "summary": "zoom\nSchedule\nJoin\nHost\nDU\n\nPERSONAL\n\nHome\nProfile\nMeetings\nWebinars\nPersonal Contacts\nRecordings\nSettings\nScheduler\nReports\nBack to Home\nSchedule Meeting\nYour meeting is scheduled.\nTopic\nQA valid schedule\nDescription\nAgenda: test every field.\nTime\nThursday, October 1, 10:00 AM - 11:30 AM (GMT+5:30)"
+      }
+    },
+    {
+      "name": "schedule: past date is refused with a message",
+      "pass": true,
+      "evidence": {
+        "msg": "Pick a time in the future."
+      }
+    },
+    {
+      "name": "schedule: duration 0 is refused",
+      "pass": true,
+      "evidence": {
+        "msg": "The meeting must be at least 15 minutes."
+      }
+    },
+    {
+      "name": "schedule: duration 24h45m (over the 1440 min limit) gives a clear message next to Duration",
+      "pass": false,
+      "evidence": {
+        "saved": false,
+        "durationMsg": "Input should be less than or equal to 1440",
+        "alerts": [
+          "Input should be less than or equal to 1440",
+          ""
+        ]
+      }
+    },
+    {
+      "name": "schedule: duration 24h (1440) is accepted",
+      "pass": true,
+      "evidence": {
+        "saved": true
+      }
+    },
+    {
+      "name": "schedule: empty title is refused",
+      "pass": true,
+      "evidence": {}
+    },
+    {
+      "name": "schedule: 300-char title: UI limits input (reported length) and saves without error",
+      "pass": true,
+      "evidence": {
+        "typedLength": 200,
+        "savedLength": 200
+      }
+    },
+    {
+      "name": "schedule: long title does not cause horizontal scroll on the dashboard",
+      "pass": true,
+      "evidence": {}
+    },
+    {
+      "name": "schedule: API refuses a 300-char title with 422",
+      "pass": true,
+      "evidence": {
+        "status": 422,
+        "code": "validation_error"
+      }
+    },
+    {
+      "name": "schedule: unicode + emoji title saves and shows on the dashboard unchanged",
+      "pass": true,
+      "evidence": {
+        "saved": "Réunion 会议 🚀🎉 تجربة ✓",
+        "passcode": null
+      }
+    },
+    {
+      "name": "schedule: UI refuses a passcode with spaces and # ! (allowed: letters, digits, @ * _ -)",
+      "pass": true,
+      "evidence": {}
+    },
+    {
+      "name": "schedule: API accepts a passcode with spaces and symbols (trimmed) and the host invite link encodes it",
+      "pass": true,
+      "evidence": {
+        "status": 200,
+        "stored": "a b#c!&?",
+        "invite": "http://localhost:3000/j/8378797315?pwd=a%20b%23c%21%26%3F"
+      }
+    },
+    {
+      "name": "join: invite link with an encoded symbol passcode (?pwd=) joins",
+      "pass": true,
+      "evidence": {
+        "url": "http://localhost:3000/meeting/8378797315",
+        "pwdParam": "?pwd=a%20b%23c%21%26%3F"
+      }
+    },
+    {
+      "name": "schedule: new meetings appear in Upcoming with the right access badge",
+      "pass": true,
+      "evidence": {
+        "upcoming": 9
+      }
+    },
+    {
+      "name": "schedule: PATCH title+duration shows after refresh; null title 422; past start 422",
+      "pass": true,
+      "evidence": {
+        "patch": 200,
+        "nullTitle": "422 invalid_field",
+        "pastStart": "422 start_in_past"
+      }
+    },
+    {
+      "name": "schedule: DELETE removes it from Upcoming after refresh; second DELETE 404",
+      "pass": true,
+      "evidence": {
+        "del": 204,
+        "del2": 404
+      }
+    }
+  ],
+  "deletedIds": [
+    24,
+    25,
+    26,
+    27,
+    28
+  ]
+}

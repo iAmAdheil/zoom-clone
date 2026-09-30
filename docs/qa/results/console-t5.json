@@ -1,0 +1,350 @@
+[
+  {
+    "ctx": "rt-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/api/meetings/upcoming net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "rt-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/api/meetings/recent?limit=20 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "rt-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=5_u5b-1qbZdIkkOf net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/2478815402"
+  },
+  {
+    "ctx": "rt-guest1",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest1",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest1",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest2",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest2",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest2",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest2",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest2",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2478815402?_rsc=9qAwdcey5awxQMT1 net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest2",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/meeting/2478815402"
+  },
+  {
+    "ctx": "rt-guest2",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/meeting/2478815402"
+  },
+  {
+    "ctx": "rt-guest3",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest3",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-guest3",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2478815402?_rsc=9qAwdcey5awxQMT1 net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2478815402?_rsc=9qAwdcey5awxQMT1 net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=3IQ8Z_V3q-MKKV23 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=3IQ8Z_V3q-MKKV23 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2478815402?_rsc=9qAwdcey5awxQMT1 net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2478815402?_rsc=9qAwdcey5awxQMT1 net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=3IQ8Z_V3q-MKKV23 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2478815402?_rsc=9qAwdcey5awxQMT1 net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=rznseCs3nbBjCuLC net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/2478815402"
+  },
+  {
+    "ctx": "rt-churn",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=1HNnoUvprLTBSLuK net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/2478815402"
+  }
+]

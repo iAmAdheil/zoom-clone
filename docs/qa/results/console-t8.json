@@ -1,0 +1,260 @@
+[
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=4aEiWG3rD_raL6Ic net::ERR_ABORTED",
+    "url": "http://localhost:3000/signin"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-D3Jb5zEawfMPTX6 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=ig7QO1A8psxw9zx7 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=aTegDUDB5GRSnGWA net::ERR_ABORTED",
+    "url": "http://localhost:3000/j/9201844239"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/j/9201844239"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/j/9201844239"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/meeting/9201844239"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/meeting/9201844239"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=87vwUYgUdlFmwCwQ net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/9201844239"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=AdCSwoyBToA4E4DK net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-FhNYCqANgn8y6tD net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.404",
+    "text": "GET http://localhost:3000/api/meetings/1234567890",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=-FhNYCqANgn8y6tD net::ERR_ABORTED",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.404",
+    "text": "GET http://localhost:3000/no-such-page",
+    "url": "http://localhost:3000/meeting/1234567890"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "url": "http://localhost:3000/no-such-page"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-D3Jb5zEawfMPTX6 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=ig7QO1A8psxw9zx7 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=-D3Jb5zEawfMPTX6 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/signin?_rsc=ig7QO1A8psxw9zx7 net::ERR_ABORTED",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "http.401",
+    "text": "GET http://localhost:3000/api/me",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-anon",
+    "kind": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "url": "http://localhost:3000/join"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/5010966131?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2518047537?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/7125040181?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/1218204859?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/5010966131?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/2518047537?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/1218204859?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/7125040181?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/9201844239?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+    "url": "http://localhost:3000/"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+    "url": "http://localhost:3000/schedule"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+    "url": "http://localhost:3000/schedule"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+    "url": "http://localhost:3000/schedule"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/join?_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+    "url": "http://localhost:3000/schedule"
+  },
+  {
+    "ctx": "a11y-host",
+    "kind": "requestfailed",
+    "text": "GET http://localhost:3000/meeting/9249582957?_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+    "url": "http://localhost:3000/schedule"
+  }
+]

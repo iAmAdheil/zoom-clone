@@ -1,0 +1,72 @@
+[
+  {
+    "name": "media: permission denied: pre-join says so and disables the mic/camera toggles",
+    "pass": true,
+    "evidence": {
+      "getUserMedia": "NotAllowedError",
+      "message": "The camera and microphone are blocked. You can join and still see and hear others. To use them, allow them in the browser settings, then reload.",
+      "buttons": [
+        {
+          "t": "Unmute",
+          "disabled": true
+        },
+        {
+          "t": "Start Video",
+          "disabled": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "media: a no-media guest still sees and hears the host; host sees the guest as muted + video off",
+    "pass": true,
+    "evidence": {
+      "guestSees": [
+        {
+          "label": "Demo User",
+          "hasVideo": true,
+          "videoWidth": 320,
+          "videoHeight": 180,
+          "pixelDiff": 19201
+        }
+      ],
+      "guestPcs": [
+        {
+          "state": "connected",
+          "audioBytesDelta": 9441,
+          "videoFramesDelta": 45,
+          "outAudioBytesDelta": 0
+        }
+      ],
+      "hostSees": [
+        "Demo User (you)",
+        "Denied guest, muted, video off"
+      ]
+    }
+  },
+  {
+    "name": "media: Unmute without a microphone says 'No microphone is available'",
+    "pass": true,
+    "evidence": {
+      "toast": "No microphone is available"
+    }
+  },
+  {
+    "name": "media: camera busy (NotReadableError on video): falls back to microphone only with a message",
+    "pass": true,
+    "evidence": {
+      "message": "No camera is available. You join with the microphone only.",
+      "tracks": [
+        "audio"
+      ]
+    }
+  },
+  {
+    "name": "media: camera used by another tab (fake device): both tabs get a preview (real devices not testable here)",
+    "pass": true,
+    "evidence": {
+      "tab1Error": null,
+      "tab2Error": null
+    }
+  }
+]

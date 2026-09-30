@@ -1,0 +1,2162 @@
+{
+  "rows": [
+    {
+      "name": "responsive: no tap target under 40 px on phone",
+      "pass": false,
+      "evidence": {
+        "signin@390": [
+          {
+            "name": "Zoom clone home",
+            "w": 67,
+            "h": 28
+          },
+          {
+            "name": "Join a meeting",
+            "w": 116,
+            "h": 32
+          },
+          {
+            "name": "stay",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "Privacy & Legal Policies",
+            "w": 122,
+            "h": 15
+          }
+        ],
+        "join@390": [
+          {
+            "name": "Zoom clone home",
+            "w": 67,
+            "h": 28
+          },
+          {
+            "name": "Back to Home",
+            "w": 111,
+            "h": 32
+          },
+          {
+            "name": "remember",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "Privacy & Legal Policies",
+            "w": 122,
+            "h": 15
+          }
+        ],
+        "join-link@390": [
+          {
+            "name": "Zoom clone home",
+            "w": 67,
+            "h": 28
+          },
+          {
+            "name": "Back to Home",
+            "w": 111,
+            "h": 32
+          },
+          {
+            "name": "remember",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "Privacy & Legal Policies",
+            "w": 122,
+            "h": 15
+          }
+        ],
+        "prejoin@390": [
+          {
+            "name": "Zoom clone home",
+            "w": 67,
+            "h": 28
+          },
+          {
+            "name": "remember-name",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "Privacy & Legal Policies",
+            "w": 122,
+            "h": 15
+          }
+        ],
+        "dashboard@390": [
+          {
+            "name": "Open navigation",
+            "w": 38,
+            "h": 38
+          },
+          {
+            "name": "Zoom clone home",
+            "w": 67,
+            "h": 28
+          },
+          {
+            "name": "Settings (not available yet)",
+            "w": 36,
+            "h": 36
+          },
+          {
+            "name": "Profile: Demo User",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "Schedule",
+            "w": 57,
+            "h": 20
+          },
+          {
+            "name": "Copy invite link for Weekly team sync",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for Design review",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for Customer call: Acme",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for Quarterly planning",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Join",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Join",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Join",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA bitrate",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA a11y room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA realtime room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA realtime other",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA realtime raw",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA media edge",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for <img src=x onerror=",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA join ended",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA join verified",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA join open",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for Demo User's meeting",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA api live",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA 500 probe",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA 500 probe",
+            "w": 30,
+            "h": 30
+          }
+        ],
+        "dashboard-nav-open@390": [
+          {
+            "name": "Open navigation",
+            "w": 38,
+            "h": 38
+          },
+          {
+            "name": "Zoom clone home",
+            "w": 67,
+            "h": 28
+          },
+          {
+            "name": "Settings (not available yet)",
+            "w": 36,
+            "h": 36
+          },
+          {
+            "name": "Profile: Demo User",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "Schedule",
+            "w": 57,
+            "h": 20
+          },
+          {
+            "name": "Copy invite link for Weekly team sync",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for Design review",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for Customer call: Acme",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for Quarterly planning",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Start",
+            "w": 57,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Join",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Join",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Join",
+            "w": 52,
+            "h": 32
+          },
+          {
+            "name": "Copy invite link for QA bitrate",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA a11y room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA layout room with",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA realtime room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA realtime other",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA realtime raw",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA media edge",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for <img src=x onerror=",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA join ended",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA join verified",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA join open",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for Demo User's meeting",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA room",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA api live",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA 500 probe",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Copy invite link for QA 500 probe",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Zoom clone home",
+            "w": 48,
+            "h": 20
+          },
+          {
+            "name": "Close navigation",
+            "w": 36,
+            "h": 36
+          },
+          {
+            "name": "Home",
+            "w": 208,
+            "h": 36
+          },
+          {
+            "name": "Meetings",
+            "w": 208,
+            "h": 36
+          }
+        ],
+        "schedule@390": [
+          {
+            "name": "Open navigation",
+            "w": 38,
+            "h": 38
+          },
+          {
+            "name": "Zoom clone home",
+            "w": 67,
+            "h": 28
+          },
+          {
+            "name": "Settings (not available yet)",
+            "w": 36,
+            "h": 36
+          },
+          {
+            "name": "Profile: Demo User",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "Back to Home",
+            "w": 106,
+            "h": 20
+          },
+          {
+            "name": "Add Description",
+            "w": 122,
+            "h": 20
+          },
+          {
+            "name": "use-passcode",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "waiting-room",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "access-guests",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "access-verified",
+            "w": 16,
+            "h": 16
+          },
+          {
+            "name": "Back to Home",
+            "w": 73,
+            "h": 15
+          }
+        ],
+        "room-1tile@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          }
+        ],
+        "room-4tiles@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          }
+        ],
+        "room-6tiles@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          }
+        ],
+        "room-participants@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          },
+          {
+            "name": "Close Participants (6)",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Search",
+            "w": 366,
+            "h": 32
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Invite",
+            "w": 62,
+            "h": 32
+          },
+          {
+            "name": "Mute All",
+            "w": 80,
+            "h": 32
+          },
+          {
+            "name": "More",
+            "w": 82,
+            "h": 32
+          }
+        ],
+        "room-invite-popover@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          },
+          {
+            "name": "Close Participants (6)",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Search",
+            "w": 366,
+            "h": 32
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Mute",
+            "w": 51,
+            "h": 28
+          },
+          {
+            "name": "Remove",
+            "w": 66,
+            "h": 28
+          },
+          {
+            "name": "Invite",
+            "w": 62,
+            "h": 32
+          },
+          {
+            "name": "Copy Link",
+            "w": 83,
+            "h": 20
+          },
+          {
+            "name": "Copy Invitation",
+            "w": 116,
+            "h": 20
+          },
+          {
+            "name": "Mute All",
+            "w": 80,
+            "h": 32
+          },
+          {
+            "name": "More",
+            "w": 82,
+            "h": 32
+          }
+        ],
+        "room-chat@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          },
+          {
+            "name": "Close Meeting Chat",
+            "w": 30,
+            "h": 30
+          },
+          {
+            "name": "Send message",
+            "w": 30,
+            "h": 30
+          }
+        ],
+        "room-info-popover@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "Copy Link",
+            "w": 83,
+            "h": 20
+          },
+          {
+            "name": "Copy Invitation",
+            "w": 116,
+            "h": 20
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          }
+        ],
+        "room-more-menu@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "React with 👏",
+            "w": 32,
+            "h": 40
+          },
+          {
+            "name": "React with 👍",
+            "w": 32,
+            "h": 40
+          },
+          {
+            "name": "React with ❤️",
+            "w": 32,
+            "h": 40
+          },
+          {
+            "name": "React with 😂",
+            "w": 32,
+            "h": 40
+          },
+          {
+            "name": "React with 😮",
+            "w": 32,
+            "h": 40
+          },
+          {
+            "name": "React with 🎉",
+            "w": 32,
+            "h": 40
+          },
+          {
+            "name": "Copy invite link",
+            "w": 226,
+            "h": 36
+          },
+          {
+            "name": "Share Screen",
+            "w": 226,
+            "h": 36
+          },
+          {
+            "name": "Record (not available yet)",
+            "w": 226,
+            "h": 36
+          },
+          {
+            "name": "Settings",
+            "w": 226,
+            "h": 36
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          }
+        ],
+        "room-end-menu@390": [
+          {
+            "name": "Meeting information",
+            "w": 32,
+            "h": 32
+          },
+          {
+            "name": "End",
+            "w": 48,
+            "h": 36
+          },
+          {
+            "name": "Cancel",
+            "w": 230,
+            "h": 36
+          }
+        ]
+      }
+    },
+    {
+      "name": "responsive: no horizontal scroll on any screen",
+      "pass": true,
+      "evidence": {
+        "signin@1440": false,
+        "join@1440": false,
+        "join-link@1440": false,
+        "prejoin@1440": false,
+        "dashboard@1440": false,
+        "schedule@1440": false,
+        "room-1tile@1440": false,
+        "room-4tiles@1440": false,
+        "room-6tiles@1440": false,
+        "room-participants@1440": false,
+        "room-invite-popover@1440": false,
+        "room-chat@1440": false,
+        "room-info-popover@1440": false,
+        "room-more-menu@1440": false,
+        "room-end-menu@1440": false,
+        "signin@834": false,
+        "join@834": false,
+        "join-link@834": false,
+        "prejoin@834": false,
+        "dashboard@834": false,
+        "schedule@834": false,
+        "room-1tile@834": false,
+        "room-4tiles@834": false,
+        "room-6tiles@834": false,
+        "room-participants@834": false,
+        "room-invite-popover@834": false,
+        "room-chat@834": false,
+        "room-info-popover@834": false,
+        "room-more-menu@834": false,
+        "room-end-menu@834": false,
+        "signin@390": false,
+        "join@390": false,
+        "join-link@390": false,
+        "prejoin@390": false,
+        "dashboard@390": false,
+        "dashboard-nav-open@390": false,
+        "schedule@390": false,
+        "room-1tile@390": false,
+        "room-4tiles@390": false,
+        "room-6tiles@390": false,
+        "room-participants@390": false,
+        "room-invite-popover@390": false,
+        "room-chat@390": false,
+        "room-info-popover@390": false,
+        "room-more-menu@390": false,
+        "room-end-menu@390": false
+      }
+    }
+  ],
+  "screens": {
+    "signin@1440": {
+      "file": "docs/qa/signin-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "join@1440": {
+      "file": "docs/qa/join-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "join-link@1440": {
+      "file": "docs/qa/join-link-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "prejoin@1440": {
+      "file": "docs/qa/prejoin-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "dashboard@1440": {
+      "file": "docs/qa/dashboard-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "schedule@1440": {
+      "file": "docs/qa/schedule-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-1tile@1440": {
+      "file": "docs/qa/room-1tile-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-4tiles@1440": {
+      "file": "docs/qa/room-4tiles-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-6tiles@1440": {
+      "file": "docs/qa/room-6tiles-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-participants@1440": {
+      "file": "docs/qa/room-participants-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [
+        "Search participants"
+      ],
+      "smallTapTargets": []
+    },
+    "room-invite-popover@1440": {
+      "file": "docs/qa/room-invite-popover-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [
+        "Search participants"
+      ],
+      "smallTapTargets": []
+    },
+    "room-chat@1440": {
+      "file": "docs/qa/room-chat-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-info-popover@1440": {
+      "file": "docs/qa/room-info-popover-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-more-menu@1440": {
+      "file": "docs/qa/room-more-menu-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-end-menu@1440": {
+      "file": "docs/qa/room-end-menu-1440.png",
+      "hScroll": false,
+      "scrollWidth": 1440,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "signin@834": {
+      "file": "docs/qa/signin-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "join@834": {
+      "file": "docs/qa/join-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "join-link@834": {
+      "file": "docs/qa/join-link-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "prejoin@834": {
+      "file": "docs/qa/prejoin-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "dashboard@834": {
+      "file": "docs/qa/dashboard-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "schedule@834": {
+      "file": "docs/qa/schedule-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-1tile@834": {
+      "file": "docs/qa/room-1tile-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-4tiles@834": {
+      "file": "docs/qa/room-4tiles-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-6tiles@834": {
+      "file": "docs/qa/room-6tiles-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-participants@834": {
+      "file": "docs/qa/room-participants-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [
+        "Search participants"
+      ],
+      "smallTapTargets": []
+    },
+    "room-invite-popover@834": {
+      "file": "docs/qa/room-invite-popover-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [
+        "Search participants"
+      ],
+      "smallTapTargets": []
+    },
+    "room-chat@834": {
+      "file": "docs/qa/room-chat-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-info-popover@834": {
+      "file": "docs/qa/room-info-popover-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-more-menu@834": {
+      "file": "docs/qa/room-more-menu-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "room-end-menu@834": {
+      "file": "docs/qa/room-end-menu-834.png",
+      "hScroll": false,
+      "scrollWidth": 834,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": []
+    },
+    "signin@390": {
+      "file": "docs/qa/signin-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Zoom clone home",
+          "w": 67,
+          "h": 28
+        },
+        {
+          "name": "Join a meeting",
+          "w": 116,
+          "h": 32
+        },
+        {
+          "name": "stay",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "Privacy & Legal Policies",
+          "w": 122,
+          "h": 15
+        }
+      ]
+    },
+    "join@390": {
+      "file": "docs/qa/join-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Zoom clone home",
+          "w": 67,
+          "h": 28
+        },
+        {
+          "name": "Back to Home",
+          "w": 111,
+          "h": 32
+        },
+        {
+          "name": "remember",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "Privacy & Legal Policies",
+          "w": 122,
+          "h": 15
+        }
+      ]
+    },
+    "join-link@390": {
+      "file": "docs/qa/join-link-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Zoom clone home",
+          "w": 67,
+          "h": 28
+        },
+        {
+          "name": "Back to Home",
+          "w": 111,
+          "h": 32
+        },
+        {
+          "name": "remember",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "Privacy & Legal Policies",
+          "w": 122,
+          "h": 15
+        }
+      ]
+    },
+    "prejoin@390": {
+      "file": "docs/qa/prejoin-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Zoom clone home",
+          "w": 67,
+          "h": 28
+        },
+        {
+          "name": "remember-name",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "Privacy & Legal Policies",
+          "w": 122,
+          "h": 15
+        }
+      ]
+    },
+    "dashboard@390": {
+      "file": "docs/qa/dashboard-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Open navigation",
+          "w": 38,
+          "h": 38
+        },
+        {
+          "name": "Zoom clone home",
+          "w": 67,
+          "h": 28
+        },
+        {
+          "name": "Settings (not available yet)",
+          "w": 36,
+          "h": 36
+        },
+        {
+          "name": "Profile: Demo User",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "Schedule",
+          "w": 57,
+          "h": 20
+        },
+        {
+          "name": "Copy invite link for Weekly team sync",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for Design review",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for Customer call: Acme",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for Quarterly planning",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Join",
+          "w": 52,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Join",
+          "w": 52,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Join",
+          "w": 52,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA bitrate",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA a11y room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA realtime room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA realtime other",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA realtime raw",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA media edge",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for <img src=x onerror=",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA join ended",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA join verified",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA join open",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for Demo User's meeting",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA api live",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA 500 probe",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA 500 probe",
+          "w": 30,
+          "h": 30
+        }
+      ]
+    },
+    "dashboard-nav-open@390": {
+      "file": "docs/qa/dashboard-nav-open-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Open navigation",
+          "w": 38,
+          "h": 38
+        },
+        {
+          "name": "Zoom clone home",
+          "w": 67,
+          "h": 28
+        },
+        {
+          "name": "Settings (not available yet)",
+          "w": 36,
+          "h": 36
+        },
+        {
+          "name": "Profile: Demo User",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "Schedule",
+          "w": 57,
+          "h": 20
+        },
+        {
+          "name": "Copy invite link for Weekly team sync",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for Design review",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for Customer call: Acme",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for Quarterly planning",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Start",
+          "w": 57,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Join",
+          "w": 52,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Join",
+          "w": 52,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Join",
+          "w": 52,
+          "h": 32
+        },
+        {
+          "name": "Copy invite link for QA bitrate",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA a11y room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA layout room with",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA realtime room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA realtime other",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA realtime raw",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA media edge",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for <img src=x onerror=",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA join ended",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA join verified",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA join open",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for Demo User's meeting",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA room",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA api live",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA 500 probe",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Copy invite link for QA 500 probe",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Zoom clone home",
+          "w": 48,
+          "h": 20
+        },
+        {
+          "name": "Close navigation",
+          "w": 36,
+          "h": 36
+        },
+        {
+          "name": "Home",
+          "w": 208,
+          "h": 36
+        },
+        {
+          "name": "Meetings",
+          "w": 208,
+          "h": 36
+        }
+      ]
+    },
+    "schedule@390": {
+      "file": "docs/qa/schedule-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Open navigation",
+          "w": 38,
+          "h": 38
+        },
+        {
+          "name": "Zoom clone home",
+          "w": 67,
+          "h": 28
+        },
+        {
+          "name": "Settings (not available yet)",
+          "w": 36,
+          "h": 36
+        },
+        {
+          "name": "Profile: Demo User",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "Back to Home",
+          "w": 106,
+          "h": 20
+        },
+        {
+          "name": "Add Description",
+          "w": 122,
+          "h": 20
+        },
+        {
+          "name": "use-passcode",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "waiting-room",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "access-guests",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "access-verified",
+          "w": 16,
+          "h": 16
+        },
+        {
+          "name": "Back to Home",
+          "w": 73,
+          "h": 15
+        }
+      ]
+    },
+    "room-1tile@390": {
+      "file": "docs/qa/room-1tile-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        }
+      ]
+    },
+    "room-4tiles@390": {
+      "file": "docs/qa/room-4tiles-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        }
+      ]
+    },
+    "room-6tiles@390": {
+      "file": "docs/qa/room-6tiles-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        }
+      ]
+    },
+    "room-participants@390": {
+      "file": "docs/qa/room-participants-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [
+        "Search participants"
+      ],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        },
+        {
+          "name": "Close Participants (6)",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Search",
+          "w": 366,
+          "h": 32
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Invite",
+          "w": 62,
+          "h": 32
+        },
+        {
+          "name": "Mute All",
+          "w": 80,
+          "h": 32
+        },
+        {
+          "name": "More",
+          "w": 82,
+          "h": 32
+        }
+      ]
+    },
+    "room-invite-popover@390": {
+      "file": "docs/qa/room-invite-popover-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [
+        "Search participants"
+      ],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        },
+        {
+          "name": "Close Participants (6)",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Search",
+          "w": 366,
+          "h": 32
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Mute",
+          "w": 51,
+          "h": 28
+        },
+        {
+          "name": "Remove",
+          "w": 66,
+          "h": 28
+        },
+        {
+          "name": "Invite",
+          "w": 62,
+          "h": 32
+        },
+        {
+          "name": "Copy Link",
+          "w": 83,
+          "h": 20
+        },
+        {
+          "name": "Copy Invitation",
+          "w": 116,
+          "h": 20
+        },
+        {
+          "name": "Mute All",
+          "w": 80,
+          "h": 32
+        },
+        {
+          "name": "More",
+          "w": 82,
+          "h": 32
+        }
+      ]
+    },
+    "room-chat@390": {
+      "file": "docs/qa/room-chat-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        },
+        {
+          "name": "Close Meeting Chat",
+          "w": 30,
+          "h": 30
+        },
+        {
+          "name": "Send message",
+          "w": 30,
+          "h": 30
+        }
+      ]
+    },
+    "room-info-popover@390": {
+      "file": "docs/qa/room-info-popover-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "Copy Link",
+          "w": 83,
+          "h": 20
+        },
+        {
+          "name": "Copy Invitation",
+          "w": 116,
+          "h": 20
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        }
+      ]
+    },
+    "room-more-menu@390": {
+      "file": "docs/qa/room-more-menu-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "React with 👏",
+          "w": 32,
+          "h": 40
+        },
+        {
+          "name": "React with 👍",
+          "w": 32,
+          "h": 40
+        },
+        {
+          "name": "React with ❤️",
+          "w": 32,
+          "h": 40
+        },
+        {
+          "name": "React with 😂",
+          "w": 32,
+          "h": 40
+        },
+        {
+          "name": "React with 😮",
+          "w": 32,
+          "h": 40
+        },
+        {
+          "name": "React with 🎉",
+          "w": 32,
+          "h": 40
+        },
+        {
+          "name": "Copy invite link",
+          "w": 226,
+          "h": 36
+        },
+        {
+          "name": "Share Screen",
+          "w": 226,
+          "h": 36
+        },
+        {
+          "name": "Record (not available yet)",
+          "w": 226,
+          "h": 36
+        },
+        {
+          "name": "Settings",
+          "w": 226,
+          "h": 36
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        }
+      ]
+    },
+    "room-end-menu@390": {
+      "file": "docs/qa/room-end-menu-390.png",
+      "hScroll": false,
+      "scrollWidth": 390,
+      "offscreenText": [],
+      "clippedNoEllipsis": [],
+      "smallTapTargets": [
+        {
+          "name": "Meeting information",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "name": "End",
+          "w": 48,
+          "h": 36
+        },
+        {
+          "name": "Cancel",
+          "w": 230,
+          "h": 36
+        }
+      ]
+    }
+  }
+}

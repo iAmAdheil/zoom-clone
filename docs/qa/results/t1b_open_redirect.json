@@ -1,0 +1,34 @@
+[
+  {
+    "name": "open redirect: /signin?next=/%09/evil.example/ stays on the site after demo login",
+    "pass": false,
+    "evidence": {
+      "final": "http://evil.example/"
+    }
+  },
+  {
+    "name": "open redirect: /signin?next=/%0a/evil.example/ stays on the site after demo login",
+    "pass": false,
+    "evidence": {
+      "final": "http://evil.example/"
+    }
+  },
+  {
+    "name": "open redirect: /signin?next=/%0d/evil.example/ stays on the site after demo login",
+    "pass": false,
+    "evidence": {
+      "final": "http://evil.example/"
+    }
+  },
+  {
+    "name": "open redirect: requests that reached evil.example",
+    "pass": false,
+    "evidence": {
+      "seen": [
+        "http://evil.example/",
+        "http://evil.example/",
+        "http://evil.example/"
+      ]
+    }
+  }
+]

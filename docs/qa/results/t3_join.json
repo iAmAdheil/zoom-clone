@@ -1,0 +1,193 @@
+[
+  {
+    "name": "join: by ID with spaces (3-4-3) opens the pre-join",
+    "pass": true,
+    "evidence": {
+      "input": "695 5810 062",
+      "url": "http://localhost:3000/meeting/6955810062"
+    }
+  },
+  {
+    "name": "join: by ID with dashes opens the pre-join",
+    "pass": true,
+    "evidence": {
+      "input": "695-5810-062",
+      "url": "http://localhost:3000/meeting/6955810062"
+    }
+  },
+  {
+    "name": "join: by ID with leading/trailing blanks opens the pre-join",
+    "pass": true,
+    "evidence": {
+      "input": "  6955810062  ",
+      "url": "http://localhost:3000/meeting/6955810062"
+    }
+  },
+  {
+    "name": "join: pasting a full invite link fills the ID (3-4-3) and the passcode, then joins",
+    "pass": true,
+    "evidence": {
+      "shown": "759 5230 815",
+      "passcodeFilled": true,
+      "url": "http://localhost:3000/meeting/7595230815"
+    }
+  },
+  {
+    "name": "join: a link from another host (zoom.us) is also parsed (info)",
+    "pass": null,
+    "evidence": {
+      "shown": "695 5810 062"
+    }
+  },
+  {
+    "name": "join: /j/<code>?pwd= fills the passcode and joins",
+    "pass": true,
+    "evidence": {
+      "pw": "Pa55",
+      "url": "http://localhost:3000/meeting/7595230815"
+    }
+  },
+  {
+    "name": "join: passcode meeting: pre-join Join enters the room without asking again",
+    "pass": true,
+    "evidence": {}
+  },
+  {
+    "name": "join: unknown 10-digit ID shows 'not valid' next to the field",
+    "pass": true,
+    "evidence": {
+      "msg": "This meeting ID is not valid. Check it and try again."
+    }
+  },
+  {
+    "name": "join: short ID shows a validation message",
+    "pass": true,
+    "evidence": {}
+  },
+  {
+    "name": "join: /meeting/<unknown> shows Meeting not found",
+    "pass": true,
+    "evidence": {}
+  },
+  {
+    "name": "join: /meeting/abc shows Meeting not found",
+    "pass": true,
+    "evidence": {}
+  },
+  {
+    "name": "join: wrong passcode shows an error next to the passcode field",
+    "pass": true,
+    "evidence": {
+      "passMsg": "Wrong passcode. Try again."
+    }
+  },
+  {
+    "name": "join: right passcode after a wrong one joins",
+    "pass": true,
+    "evidence": {
+      "url": "http://localhost:3000/meeting/7595230815"
+    }
+  },
+  {
+    "name": "join: a passcode typed with blanks around it is accepted",
+    "pass": true,
+    "evidence": {
+      "url": "http://localhost:3000/meeting/7595230815"
+    }
+  },
+  {
+    "name": "join: ended meeting says it has ended",
+    "pass": true,
+    "evidence": {
+      "msg": "QA join ended"
+    }
+  },
+  {
+    "name": "join: /meeting/<ended> shows 'This meeting has ended'",
+    "pass": true,
+    "evidence": {}
+  },
+  {
+    "name": "join: guest on verified_only is blocked, signs in with demo, comes back and joins",
+    "pass": true,
+    "evidence": {
+      "blockedMsg": "Only signed-in users can join this meeting. Sign in, then join again.",
+      "signInHref": "/signin?next=%2Fj%2F4369329809",
+      "returnedTo": "http://localhost:3000/j/4369329809",
+      "prefilledName": "Demo User",
+      "final": "http://localhost:3000/meeting/4369329809"
+    }
+  },
+  {
+    "name": "join: signed-in user who clicks Join at once is not told 'Enter your name' while the field shows the name",
+    "pass": false,
+    "evidence": {
+      "results": [
+        {
+          "url": "/j/6955810062",
+          "nameField": "Bob Martins",
+          "error": true
+        },
+        {
+          "url": "/j/6955810062",
+          "nameField": "Bob Martins",
+          "error": true
+        },
+        {
+          "url": "/meeting/6955810062",
+          "nameField": "",
+          "error": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "join: empty (blank) display name is refused",
+    "pass": true,
+    "evidence": {}
+  },
+  {
+    "name": "join: 200-char display name: the UI cuts it (info: maxLength)",
+    "pass": null,
+    "evidence": {
+      "typedLength": 64
+    }
+  },
+  {
+    "name": "join: API accepts a 200-char name and refuses 256",
+    "pass": true,
+    "evidence": {
+      "long200": 200,
+      "long256": 422
+    }
+  },
+  {
+    "name": "join: 64-char and 200-char names do not break the tile or panel layout",
+    "pass": true,
+    "evidence": {
+      "pageScrollX": false,
+      "tilesOverflow": 0
+    }
+  },
+  {
+    "name": "xss: an HTML meeting title renders as text on the join card and the pre-join",
+    "pass": true,
+    "evidence": {
+      "dialogs": []
+    }
+  },
+  {
+    "name": "xss: HTML title on the host dashboard renders as text",
+    "pass": true,
+    "evidence": {
+      "dialogs": []
+    }
+  },
+  {
+    "name": "xss: no alert() fired during the join tests",
+    "pass": true,
+    "evidence": {
+      "dialogs": []
+    }
+  }
+]
