@@ -29,9 +29,9 @@ export function bestTileSize(count: number, box: Size, aspect: number): Size {
 type VideoGridProps = {
   participants: Participant[];
   selfId: number;
-  /** The active speaker. Null while the app has no audio levels. */
-  speakerId: number | null;
   selfStream: MediaStream | null;
+  /** My microphone seems to give only silence. */
+  selfMicProblem: boolean;
   /** Remote streams and connection state, by participant id. */
   peers: PeerSnapshot;
   reaction: { emoji: string; key: number } | null;
@@ -39,7 +39,7 @@ type VideoGridProps = {
   aspect: number;
 };
 
-export function VideoGrid({ participants, selfId, speakerId, selfStream, peers, reaction, aspect }: VideoGridProps) {
+export function VideoGrid({ participants, selfId, selfStream, selfMicProblem, peers, reaction, aspect }: VideoGridProps) {
   const boxRef = useRef<HTMLDivElement>(null);
   // A first guess for the server render. The observer replaces it after mount.
   const [box, setBox] = useState<Size>({ width: 1200, height: 640 });
@@ -68,10 +68,12 @@ export function VideoGrid({ participants, selfId, speakerId, selfStream, peers, 
             key={p.id}
             participant={p}
             isSelf={p.id === selfId}
-            speaking={p.id === speakerId}
+            // The frame follows the real audio level of each remote peer (getStats).
+            speaking={peers.info.get(p.id)?.speaking ?? false}
             stream={p.id === selfId ? selfStream : (peers.streams.get(p.id) ?? null)}
             peer={p.id === selfId ? undefined : peers.info.get(p.id)}
             reaction={p.id === selfId ? reaction : null}
+            micProblem={p.id === selfId && selfMicProblem}
             style={{ width: tile.width, height: tile.height }}
           />
         ))}

@@ -14,7 +14,14 @@ import { parseSignal, type SendSignal, type SignalData } from "./signaling";
 
 export type PeerStatus = "connecting" | "connected" | "problem";
 export type SignalQuality = "good" | "fair" | "poor";
-export type PeerInfo = { status: PeerStatus; quality: SignalQuality | null };
+export type PeerInfo = {
+  status: PeerStatus;
+  quality: SignalQuality | null;
+  /** The remote sound is loud now (getStats `audioLevel`). Drives the active speaker frame. */
+  speaking: boolean;
+  /** No audio bytes came for NO_AUDIO_MS while the connection works. */
+  noAudio: boolean;
+};
 
 /** What the components read. A new object after each change. */
 export type PeerSnapshot = {
@@ -25,8 +32,17 @@ export type PeerSnapshot = {
 
 export const EMPTY_PEERS: PeerSnapshot = { streams: new Map(), info: new Map() };
 
-type MediaKind = "audio" | "video";
+export type MediaKind = "audio" | "video";
 const KINDS: MediaKind[] = ["audio", "video"];
+
+/** `audioLevel` (0 to 1) at or above this value counts as speech. Room noise stays below it. */
+export const SPEAKING_LEVEL = 0.03;
+/** The speaker frame stays this long after the last loud sample, so it does not blink. */
+export const SPEAKING_HOLD_MS = 1200;
+/** No audio bytes for this long: the tile says "No audio from <name>" (when not muted). */
+export const NO_AUDIO_MS = 5000;
+/** How often the signal quality dot can change. The audio values change on every stats tick. */
+const QUALITY_EVERY_MS = 3000;
 
 type Peer = {
   id: number;
@@ -43,7 +59,13 @@ type Peer = {
   problem: boolean;
   restartTimer: ReturnType<typeof setTimeout> | null;
   quality: SignalQuality | null;
+  qualityAt: number;
   lastPackets: { lost: number; received: number } | null;
+  /** The replaceTrack calls of this peer run one after the other (see syncSender). */
+  senderChain: Promise<void>;
+  audio: AudioProbe | null;
+  speaking: boolean;
+  noAudio: boolean;
 };
 
 export type PeerManagerOptions = {
@@ -56,8 +78,10 @@ export type PeerManagerOptions = {
   createStream?: (tracks: MediaStreamTrack[]) => MediaStream;
   /** How long an ICE restart may take before the tile shows "connection problem". */
   restartTimeoutMs?: number;
-  /** How often to read getStats for the signal quality dot. 0 turns it off. */
+  /** How often to read getStats (audio level, audio bytes, signal quality). 0 turns it off. */
   statsIntervalMs?: number;
+  /** Tests give a fake clock. */
+  now?: () => number;
   /** The id of this page. Random by default. */
   sid?: string;
 };
@@ -90,6 +114,83 @@ export function rateQuality(rttSeconds: number | null, lossRatio: number): Signa
   return "good";
 }
 
+/** The inbound audio values of one getStats report. */
+export type InboundAudio = { bytes: number; level: number | null; energy: number | null; duration: number | null };
+
+function num(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+/** Reads the inbound audio stream of a report. Null when the report has none. */
+export function readInboundAudio(stats: readonly Record<string, unknown>[]): InboundAudio | null {
+  for (const stat of stats) {
+    // Old browsers name the field `mediaType`.
+    if (stat.type !== "inbound-rtp" || (stat.kind ?? stat.mediaType) !== "audio") continue;
+    return {
+      bytes: num(stat.bytesReceived) ?? 0,
+      level: num(stat.audioLevel),
+      energy: num(stat.totalAudioEnergy),
+      duration: num(stat.totalSamplesDuration),
+    };
+  }
+  return null;
+}
+
+/** What one peer remembers about its remote sound between two stats ticks. */
+export type AudioProbe = {
+  bytes: number;
+  energy: number | null;
+  duration: number | null;
+  /** The level of the latest tick, 0 to 1. */
+  level: number;
+  /** The last time the audio bytes grew (or the first tick). */
+  flowingAt: number;
+  /** The last time the level was at SPEAKING_LEVEL or above. */
+  loudAt: number | null;
+};
+
+/**
+ * One stats tick. The level is `audioLevel` when the browser gives it. Else it comes from
+ * `totalAudioEnergy` and `totalSamplesDuration` (the formula of the stats spec). A tick with
+ * no new bytes is never loud, because a stopped stream can keep its last `audioLevel`.
+ */
+export function nextAudioProbe(prev: AudioProbe | null, sample: InboundAudio | null, now: number): AudioProbe {
+  if (!sample) {
+    return {
+      bytes: prev?.bytes ?? 0,
+      energy: null,
+      duration: null,
+      level: 0,
+      flowingAt: prev?.flowingAt ?? now,
+      loudAt: prev?.loudAt ?? null,
+    };
+  }
+  const grew = prev !== null && sample.bytes > prev.bytes;
+  let level = sample.level;
+  if (level === null) {
+    const energy = prev?.energy != null && sample.energy !== null ? sample.energy - prev.energy : 0;
+    const duration = prev?.duration != null && sample.duration !== null ? sample.duration - prev.duration : 0;
+    level = duration > 0 && energy > 0 ? Math.sqrt(energy / duration) : 0;
+  }
+  if (!grew) level = 0;
+  return {
+    bytes: sample.bytes,
+    energy: sample.energy,
+    duration: sample.duration,
+    level,
+    flowingAt: prev === null || grew ? now : prev.flowingAt,
+    loudAt: level >= SPEAKING_LEVEL ? now : (prev?.loudAt ?? null),
+  };
+}
+
+export function isSpeaking(probe: AudioProbe | null, now: number): boolean {
+  return probe?.loudAt != null && now - probe.loudAt <= SPEAKING_HOLD_MS;
+}
+
+export function isAudioMissing(probe: AudioProbe | null, now: number): boolean {
+  return probe !== null && now - probe.flowingAt >= NO_AUDIO_MS;
+}
+
 function isLive(pc: RTCPeerConnection): boolean {
   return pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed";
 }
@@ -109,6 +210,7 @@ export class PeerManager {
   private readonly createStream: (tracks: MediaStreamTrack[]) => MediaStream;
   private readonly restartTimeoutMs: number;
   private readonly statsIntervalMs: number;
+  private readonly now: () => number;
 
   private readonly peers = new Map<number, Peer>();
   /** The ids that I sent `hello` to, and whose call I wait for. */
@@ -131,7 +233,8 @@ export class PeerManager {
     this.createPc = options.createPeerConnection ?? ((config) => new RTCPeerConnection(config));
     this.createStream = options.createStream ?? ((tracks) => new MediaStream(tracks));
     this.restartTimeoutMs = options.restartTimeoutMs ?? 10_000;
-    this.statsIntervalMs = options.statsIntervalMs ?? 3_000;
+    this.statsIntervalMs = options.statsIntervalMs ?? 500;
+    this.now = options.now ?? (() => performance.now());
     this.sid = options.sid ?? randomSid();
   }
 
@@ -148,9 +251,14 @@ export class PeerManager {
 
   // ---- inputs ----
 
-  /** The local camera and microphone. Null means "no media": the peer only receives. */
+  /**
+   * The local camera and microphone. Null means "no media": the peer only receives.
+   * A new stream (another device, or a device that the user allowed late) goes into the
+   * senders of every open connection. No new offer is needed.
+   */
   setLocalStream(stream: MediaStream | null) {
     this.localStream = stream;
+    for (const kind of KINDS) this.syncAll(kind);
   }
 
   /**
@@ -159,10 +267,12 @@ export class PeerManager {
    */
   setSending(kind: MediaKind, on: boolean) {
     this.sending[kind] = on;
-    const track = on ? this.localTrack(kind) : null;
-    for (const peer of this.peers.values()) {
-      peer.senders[kind]?.replaceTrack(track).catch(() => {});
-    }
+    this.syncAll(kind);
+  }
+
+  /** The track that the senders of `kind` must have now: null when off or with no device. */
+  wantedTrack(kind: MediaKind): MediaStreamTrack | null {
+    return this.sending[kind] ? this.localTrack(kind) : null;
   }
 
   /** Call after each snapshot with its `connected_ids`. Also runs after a reconnect. */
@@ -290,7 +400,12 @@ export class PeerManager {
       problem: false,
       restartTimer: null,
       quality: null,
+      qualityAt: 0,
       lastPackets: null,
+      senderChain: Promise.resolve(),
+      audio: null,
+      speaking: false,
+      noAudio: false,
     };
     pc.onicecandidate = (event) => {
       if (event.candidate && this.isCurrent(peer))
@@ -310,20 +425,42 @@ export class PeerManager {
     return peer;
   }
 
-  /** Adds my tracks. Without a track of a kind, the offerer still asks to receive that kind. */
+  /**
+   * One audio and one video sender for each connection, "sendrecv", even with no local track.
+   * A sender with no track sends nothing. A track goes in later with replaceTrack and no new
+   * offer: on unmute, on a device change, and when the user allows the microphone late.
+   * The offerer adds the transceivers. The answerer uses the ones that the offer made.
+   */
   private addLocalMedia(peer: Peer, offerer: boolean) {
     peer.mediaAdded = true;
-    const stream = this.localStream;
+    const fromOffer = offerer ? [] : peer.pc.getTransceivers();
     for (const kind of KINDS) {
-      const track = this.localTrack(kind);
-      if (track && stream) {
-        const sender = peer.pc.addTrack(track, stream);
-        peer.senders[kind] = sender;
-        if (!this.sending[kind]) sender.replaceTrack(null).catch(() => {});
-      } else if (offerer) {
-        peer.pc.addTransceiver(kind, { direction: "recvonly" });
-      }
+      let transceiver = fromOffer.find((t) => t.receiver.track?.kind === kind);
+      if (transceiver) transceiver.direction = "sendrecv";
+      else transceiver = peer.pc.addTransceiver(this.wantedTrack(kind) ?? kind, { direction: "sendrecv" });
+      peer.senders[kind] = transceiver.sender;
+      this.syncSender(peer, kind);
     }
+  }
+
+  private syncAll(kind: MediaKind) {
+    for (const peer of this.peers.values()) this.syncSender(peer, kind);
+  }
+
+  /**
+   * Puts the wanted track into the sender. The calls of one peer run in a chain, and each call
+   * reads the wanted track when it runs. So two quick toggles cannot finish in the wrong
+   * order: the last mute, unmute or device change always wins.
+   */
+  private syncSender(peer: Peer, kind: MediaKind) {
+    const sender = peer.senders[kind];
+    if (!sender) return;
+    peer.senderChain = peer.senderChain
+      .then(async () => {
+        const track = this.wantedTrack(kind);
+        if (this.isCurrent(peer) && sender.track !== track) await sender.replaceTrack(track);
+      })
+      .catch((error: unknown) => console.warn(`WebRTC: peer ${peer.id}: replaceTrack:`, error));
   }
 
   private async sendOffer(peer: Peer, iceRestart: boolean) {
@@ -353,7 +490,13 @@ export class PeerManager {
       peer.problem = false;
       if (peer.restartTimer) clearTimeout(peer.restartTimer);
       peer.restartTimer = null;
-    } else if (state === "failed" && peer.restarted) {
+    } else {
+      // The audio check starts again when the connection comes back.
+      peer.audio = null;
+      peer.speaking = false;
+      peer.noAudio = false;
+    }
+    if (state === "failed" && peer.restarted) {
       peer.problem = true;
     } else if (state === "failed") {
       peer.restarted = true;
@@ -404,12 +547,12 @@ export class PeerManager {
     this.chains.set(id, next);
   }
 
-  // ---- signal quality (getStats) ----
+  // ---- getStats: audio level, audio bytes, signal quality ----
 
   private startStats() {
     if (this.statsTimer || this.statsIntervalMs <= 0) return;
     this.statsTimer = setInterval(() => {
-      for (const peer of this.peers.values()) if (isLive(peer.pc)) void this.sampleQuality(peer);
+      for (const peer of this.peers.values()) if (isLive(peer.pc)) void this.sampleStats(peer.id);
     }, this.statsIntervalMs);
   }
 
@@ -418,29 +561,51 @@ export class PeerManager {
     this.statsTimer = null;
   }
 
-  private async sampleQuality(peer: Peer) {
+  /** Reads the stats of one live peer. Public for tests, which call it with a fake clock. */
+  async sampleStats(id: number) {
+    const peer = this.peers.get(id);
+    if (!peer) return;
     const report = await peer.pc.getStats().catch(() => null);
     if (!report || !this.isCurrent(peer)) return;
+    const stats: Record<string, unknown>[] = [];
+    report.forEach((stat: Record<string, unknown>) => stats.push(stat));
+    const now = this.now();
+
+    peer.audio = nextAudioProbe(peer.audio, readInboundAudio(stats), now);
+    const speaking = isSpeaking(peer.audio, now);
+    const noAudio = isAudioMissing(peer.audio, now);
+    let changed = speaking !== peer.speaking || noAudio !== peer.noAudio;
+    peer.speaking = speaking;
+    peer.noAudio = noAudio;
+
+    if (now - peer.qualityAt >= QUALITY_EVERY_MS) {
+      peer.qualityAt = now;
+      const quality = this.rateStats(peer, stats);
+      changed ||= quality !== peer.quality;
+      peer.quality = quality;
+    }
+    // Emit only on a change, so the room does not render again on every tick.
+    if (changed) this.emit();
+  }
+
+  private rateStats(peer: Peer, stats: readonly Record<string, unknown>[]): SignalQuality {
     let rtt: number | null = null;
     let lost = 0;
     let received = 0;
-    report.forEach((stat: Record<string, unknown>) => {
+    for (const stat of stats) {
       if (stat.type === "candidate-pair" && stat.nominated && typeof stat.currentRoundTripTime === "number")
         rtt = stat.currentRoundTripTime;
       if (stat.type === "inbound-rtp") {
         lost += typeof stat.packetsLost === "number" ? stat.packetsLost : 0;
         received += typeof stat.packetsReceived === "number" ? stat.packetsReceived : 0;
       }
-    });
+    }
     const last = peer.lastPackets;
     peer.lastPackets = { lost, received };
     const newLost = last ? Math.max(0, lost - last.lost) : 0;
     const newReceived = last ? Math.max(0, received - last.received) : 0;
     const loss = newLost + newReceived > 0 ? newLost / (newLost + newReceived) : 0;
-    const quality = rateQuality(rtt, loss);
-    if (quality === peer.quality) return;
-    peer.quality = quality;
-    this.emit();
+    return rateQuality(rtt, loss);
   }
 
   // ---- snapshot ----
@@ -451,7 +616,13 @@ export class PeerManager {
     for (const [id, peer] of this.peers) {
       if (peer.stream) streams.set(id, peer.stream);
       const status: PeerStatus = peer.problem ? "problem" : isLive(peer.pc) ? "connected" : "connecting";
-      info.set(id, { status, quality: status === "connected" ? peer.quality : null });
+      const connected = status === "connected";
+      info.set(id, {
+        status,
+        quality: connected ? peer.quality : null,
+        speaking: connected && peer.speaking,
+        noAudio: connected && peer.noAudio,
+      });
     }
     this.snapshot = { streams, info };
     for (const listener of this.listeners) listener();

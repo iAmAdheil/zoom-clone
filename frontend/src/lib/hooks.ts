@@ -68,6 +68,20 @@ export function useToast(ms = 2500) {
   return { message, show };
 }
 
+/** True when `flag` has stayed true for `ms`. A short blip never shows. */
+export function useHeldFor(flag: boolean, ms: number): boolean {
+  const [held, setHeld] = useState(false);
+  useEffect(() => {
+    if (!flag) return;
+    const timer = setTimeout(() => setHeld(true), ms);
+    return () => {
+      clearTimeout(timer);
+      setHeld(false);
+    };
+  }, [flag, ms]);
+  return flag && held;
+}
+
 function subscribeToClock(onTick: () => void) {
   const id = setInterval(onTick, 1000);
   return () => clearInterval(id);

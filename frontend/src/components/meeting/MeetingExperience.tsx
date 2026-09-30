@@ -7,6 +7,7 @@ import { ApiError, errorMessage } from "@/lib/api";
 import { useMeetingSession } from "@/lib/meetingStore";
 import { useMe, useMeetingLookup } from "@/lib/queries";
 import { rememberedName } from "@/lib/storage";
+import { useUnlockAudioOnGesture } from "@/lib/webrtc/audioPlayback";
 import { useMedia } from "@/lib/webrtc/useMedia";
 import { MeetingNotice as Notice } from "./MeetingNotice";
 import { MeetingRoom } from "./MeetingRoom";
@@ -27,6 +28,10 @@ export function MeetingExperience({ code }: { code: string }) {
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [roomActive, setRoomActive] = useState(true);
+  // The chosen speaker for the remote sound. "" is the system default.
+  const [speakerId, setSpeakerId] = useState("");
+  // A click or tap anywhere on the page starts blocked sound (autoplay rules).
+  useUnlockAudioOnGesture();
 
   // Open the devices while the meeting loads (no waterfall), but not for an unknown or ended meeting.
   const canPreview = code.length === 10 && lookup.data !== undefined && lookup.data.status !== "ended";
@@ -41,6 +46,8 @@ export function MeetingExperience({ code }: { code: string }) {
         code={code}
         meeting={session.meeting}
         media={media}
+        speakerId={speakerId}
+        onSpeakerChange={setSpeakerId}
         onEndedForAll={() => setStage("ended")}
         onActiveChange={setRoomActive}
       />
@@ -97,8 +104,10 @@ export function MeetingExperience({ code }: { code: string }) {
         media={media}
         micOn={micOn}
         camOn={camOn}
-        onToggleMic={() => setMicOn((v) => !v)}
-        onToggleCam={() => setCamOn((v) => !v)}
+        onMicChange={setMicOn}
+        onCamChange={setCamOn}
+        speakerId={speakerId}
+        onSpeakerChange={setSpeakerId}
         onJoined={() => setStage("room")}
       />
     </SimpleShell>

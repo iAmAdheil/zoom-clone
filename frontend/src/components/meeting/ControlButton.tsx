@@ -16,6 +16,8 @@ type ControlButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   badge?: number | string;
   /** "count" is the plain superscript number (Participants). "alert" is a red dot badge (unread chat). */
   badgeTone?: "count" | "alert";
+  /** The left part of a SplitControl. The group draws the hover box, not the button. */
+  grouped?: boolean;
 };
 
 /** Icon-over-label toolbar button of the Zoom meeting toolbar. */
@@ -27,6 +29,7 @@ export function ControlButton({
   active,
   badge,
   badgeTone = "alert",
+  grouped,
   className,
   ...rest
 }: ControlButtonProps) {
@@ -34,7 +37,9 @@ export function ControlButton({
     <button
       type="button"
       className={cn(
-        "relative flex h-14 min-w-14 flex-col items-center justify-center gap-1 rounded-md px-2 text-2xs text-room-text transition-colors hover:bg-room-hover active:bg-room-press sm:min-w-16",
+        // Narrow on phones, so the toolbar and the two carets fit a 360px screen.
+        "relative flex h-14 min-w-12 flex-col items-center justify-center gap-1 px-1 text-2xs text-room-text transition-colors active:bg-room-press sm:min-w-16 sm:px-2",
+        grouped ? "rounded-l-md focus-visible:-outline-offset-2" : "rounded-md hover:bg-room-hover",
         active && "bg-room-hover",
         className,
       )}
@@ -60,21 +65,6 @@ export function ControlButton({
         ) : null}
       </span>
       <span className="whitespace-nowrap">{label}</span>
-    </button>
-  );
-}
-
-/** Small caret beside Mute and Stop Video (opens device options in the real client). */
-export function CaretButton({ label, onClick }: { label: string; onClick?: () => void }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className="-ml-1 hidden h-14 items-start rounded-md px-0.5 pt-2.5 text-room-muted transition-colors hover:bg-room-hover hover:text-room-text sm:flex"
-    >
-      <Icon name="chevronUp" size={14} strokeWidth={2.2} />
     </button>
   );
 }

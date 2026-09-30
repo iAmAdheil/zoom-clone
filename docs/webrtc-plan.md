@@ -25,6 +25,14 @@ Use the existing meeting WebSocket. Messages are defined in `docs/api.md` (`sign
 - If the user denies the camera or microphone, join anyway as "no media". The user can still see and hear others.
 - Remote audio plays through a hidden `<audio autoplay>` element, or the `<video>` element of the tile. Do not play the local audio back to the user.
 
+## Media update (audio fix)
+- The devices open at page load only when the Permissions API says "granted". Else the pre-join page shows "Allow camera and microphone", and `getUserMedia` runs inside that tap (or inside the Join tap). Mobile browsers may show no prompt without a tap.
+- `getUserMedia` asks for both devices first, then for each one alone. Audio constraints set `echoCancellation`, `noiseSuppression` and `autoGainControl` to true.
+- Each connection has one audio and one video transceiver, "sendrecv", even with no local track. Mute, device change and a late "Allow" use `replaceTrack` only. No renegotiation.
+- The `replaceTrack` calls of one peer run in a chain, and each call reads the wanted track when it runs. So the last mute or unmute always wins.
+- A refused `audio.play()` (autoplay rules) shows "Sound is blocked. Click to turn on sound". The next click, key press or tap plays the sound.
+- `getStats` every 500 ms: `audioLevel` drives the speaker frame. No audio bytes for 5 s from an unmuted peer shows "No audio from <name>". A local `AnalyserNode` warns when my microphone gives only silence.
+
 ## ICE servers
 - Default: `stun:stun.l.google.com:19302`.
 - Optional TURN from env: `NEXT_PUBLIC_TURN_URL`, `NEXT_PUBLIC_TURN_USERNAME`, `NEXT_PUBLIC_TURN_CREDENTIAL`. If they are not set, use STUN only.

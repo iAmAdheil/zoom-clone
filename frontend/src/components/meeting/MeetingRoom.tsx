@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/Button";
 import { Check } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { copyText, useMediaQuery, useToast } from "@/lib/hooks";
 import type { ChatMessage, Meeting } from "@/lib/types";
 import { useRoom } from "@/lib/useRoom";
+import { unlockAudio, useAudioBlocked } from "@/lib/webrtc/audioPlayback";
+import { canListDevices, useDeviceChoices } from "@/lib/webrtc/devices";
+import { useMicProblem } from "@/lib/webrtc/micLevel";
+import type { MediaKind } from "@/lib/webrtc/peerManager";
 import { useTrackToggles, type LocalMedia } from "@/lib/webrtc/useMedia";
 import { usePeers } from "@/lib/webrtc/usePeers";
 import { ChatPanel } from "./ChatPanel";
-import { ControlBar, type Panel } from "./ControlBar";
+import { ControlBar, type DeviceMenu, type Panel } from "./ControlBar";
 import { ParticipantsPanel } from "./ParticipantsPanel";
 import { ParticipantTile } from "./ParticipantTile";
 import { RoomExitNotice } from "./RoomExitNotice";
@@ -22,20 +27,37 @@ import { VideoGrid } from "./VideoGrid";
 type MeetingRoomProps = {
   code: string;
   meeting: Meeting;
-  /** The camera and microphone from the pre-join preview. The room never opens them again. */
+  /** The camera and microphone from the pre-join preview. The room opens them only when the user asks. */
   media: LocalMedia;
+  /** The chosen speaker for the remote sound. "" is the system default. */
+  speakerId: string;
+  onSpeakerChange: (id: string) => void;
   /** The host ended the meeting for everyone (the REST call worked). */
   onEndedForAll: () => void;
   /** False when the server closed the room (removed, ended, lost). The parent then stops the devices. */
   onActiveChange: (active: boolean) => void;
 };
 
+const DEVICE_NAME: Record<MediaKind, string> = { audio: "Microphone", video: "Camera" };
+const noSubscribe = () => () => {};
+
 /** Dark meeting room: top bar, gallery, toolbar, side panel and host dialogs. */
-export function MeetingRoom({ code, meeting, media, onEndedForAll, onActiveChange }: MeetingRoomProps) {
+export function MeetingRoom({
+  code,
+  meeting,
+  media,
+  speakerId,
+  onSpeakerChange,
+  onEndedForAll,
+  onActiveChange,
+}: MeetingRoomProps) {
   const toast = useToast(3500);
   const room = useRoom(code, toast.show);
   const { participants, me, status, actions } = room;
   const peers = usePeers(room, media.stream);
+  const soundBlocked = useAudioBlocked();
+  const choices = useDeviceChoices(media.stream);
+  const showDeviceMenus = useSyncExternalStore(noSubscribe, canListDevices, () => false);
 
   const [panel, setPanel] = useState<Panel>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -55,10 +77,26 @@ export function MeetingRoom({ code, meeting, media, onEndedForAll, onActiveChang
   const micOn = me ? !me.is_muted : false;
   const camOn = me ? !me.is_video_off : false;
   useTrackToggles(media.stream, micOn, camOn);
+  const micProblem = useMicProblem(media.stream, micOn && media.hasAudio);
   const reportActive = useEffectEvent(onActiveChange);
   useEffect(() => {
     reportActive(inRoom);
   }, [inRoom]);
+
+  // A device that stops (unplugged, or taken by the system) turns me muted or video off for
+  // everyone. So the others never see "unmuted" while no sound can come.
+  const syncLostDevice = useEffectEvent((kind: MediaKind) => {
+    if (kind === "audio" && micOn) actions.setMuted(true);
+    if (kind === "video" && camOn) actions.setVideoOff(true);
+  });
+  const audioLost = inRoom && micOn && !media.hasAudio;
+  const videoLost = inRoom && camOn && !media.hasVideo;
+  useEffect(() => {
+    if (audioLost) syncLostDevice("audio");
+  }, [audioLost]);
+  useEffect(() => {
+    if (videoLost) syncLostDevice("video");
+  }, [videoLost]);
 
   if (!me) return null;
 
@@ -81,6 +119,48 @@ export function MeetingRoom({ code, meeting, media, onEndedForAll, onActiveChang
     setPanel((cur) => (cur === next ? null : next));
     if (next === "chat") setUnread(0);
   }
+
+  /**
+   * Mute and video toggles. With no open device, the tap asks the browser for it (inside the
+   * tap, for mobile browsers). The new track goes to every peer with no reload.
+   */
+  async function toggleDevice(kind: MediaKind) {
+    const on = kind === "audio" ? micOn : camOn;
+    const available = kind === "audio" ? media.hasAudio : media.hasVideo;
+    const setOff = kind === "audio" ? actions.setMuted : actions.setVideoOff;
+    if (on || available) {
+      setOff(on);
+      return;
+    }
+    const result = await media.request([kind]);
+    if (result[kind] === "ok") setOff(false);
+    else toast.show(`${DEVICE_NAME[kind]} not allowed. Allow it in the browser settings, then try again.`);
+  }
+
+  async function allowDevice(kind: MediaKind) {
+    const result = await media.request([kind]);
+    if (result[kind] !== "ok") toast.show(`${DEVICE_NAME[kind]} not allowed. Allow it in the browser settings, then try again.`);
+    else if (kind === "audio") toast.show("The microphone is ready. Click Unmute to talk.");
+    else toast.show("The camera is ready. Click Start Video.");
+  }
+
+  async function chooseDevice(kind: MediaKind, id: string) {
+    if (!(await media.selectDevice(kind, id))) toast.show(`Could not open that ${DEVICE_NAME[kind].toLowerCase()}.`);
+  }
+
+  const audioMenu: DeviceMenu = {
+    groups: [
+      { label: "Select a Microphone", options: choices.mics, selectedId: choices.micId, onSelect: (id) => void chooseDevice("audio", id) },
+      { label: "Select a Speaker", options: choices.speakers, selectedId: speakerId || "default", onSelect: onSpeakerChange },
+    ],
+    actions: media.hasAudio ? [] : [{ label: "Allow microphone", onSelect: () => void allowDevice("audio") }],
+  };
+  const videoMenu: DeviceMenu = {
+    groups: [
+      { label: "Select a Camera", options: choices.cams, selectedId: choices.camId, onSelect: (id) => void chooseDevice("video", id) },
+    ],
+    actions: media.hasVideo ? [] : [{ label: "Allow camera", onSelect: () => void allowDevice("video") }],
+  };
 
   async function copyInvite() {
     const ok = await copyText(meeting.invite_link);
@@ -135,13 +215,13 @@ export function MeetingRoom({ code, meeting, media, onEndedForAll, onActiveChang
         <div className="relative min-h-0 flex-1">
           {/* The sound of each remote participant. It plays even when their video is off. */}
           {[...peers.streams].map(([id, stream]) => (
-            <RemoteAudio key={id} stream={stream} participantId={id} />
+            <RemoteAudio key={id} stream={stream} participantId={id} speakerId={speakerId} />
           ))}
           <VideoGrid
             participants={gridPeople}
             selfId={selfId}
-            speakerId={null}
             selfStream={media.stream}
+            selfMicProblem={micProblem}
             peers={peers}
             reaction={reaction}
             aspect={isPhone ? 1 : 16 / 9}
@@ -155,31 +235,51 @@ export function MeetingRoom({ code, meeting, media, onEndedForAll, onActiveChang
                 speaking={false}
                 stream={media.stream}
                 reaction={reaction}
+                micProblem={micProblem}
                 className="size-full"
               />
             </div>
           ) : null}
-          {status === "reconnecting" ? (
-            <p
-              role="status"
-              className="absolute top-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-md bg-room-popover px-4 py-2 text-sm font-bold shadow-popover"
-            >
-              <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-room-muted border-t-room-text" />
-              Reconnecting...
-            </p>
-          ) : null}
+          <div className="absolute top-3 left-1/2 z-20 flex w-max max-w-[calc(100%-24px)] -translate-x-1/2 flex-col items-center gap-2">
+            {soundBlocked ? (
+              // The browser refused to play the remote sound. A click here counts as the user's
+              // permission, so the sound starts. Any other click on the page does it too.
+              <button
+                type="button"
+                onClick={unlockAudio}
+                className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-bold text-white shadow-popover transition-colors hover:bg-primary-hover"
+              >
+                <Icon name="alert" size={16} className="shrink-0" />
+                Sound is blocked. Click to turn on sound
+              </button>
+            ) : null}
+            {status === "reconnecting" ? (
+              <p
+                role="status"
+                className="flex items-center gap-2 rounded-md bg-room-popover px-4 py-2 text-sm font-bold shadow-popover"
+              >
+                <span aria-hidden="true" className="size-3.5 animate-spin rounded-full border-2 border-room-muted border-t-room-text" />
+                Reconnecting...
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <ControlBar
-          micOn={micOn}
-          camOn={camOn}
+          micOn={micOn && media.hasAudio}
+          camOn={camOn && media.hasVideo}
+          micAvailable={media.hasAudio}
+          camAvailable={media.hasVideo}
+          audioMenu={audioMenu}
+          videoMenu={videoMenu}
+          showDeviceMenus={showDeviceMenus}
           panel={panel}
           participantCount={participants.length}
           panelOpen={panel !== null}
           unreadChat={unread}
           isHost={isHost}
-          onToggleMic={() => (micOn || media.hasAudio ? actions.setMuted(micOn) : toast.show("No microphone is available"))}
-          onToggleCam={() => (camOn || media.hasVideo ? actions.setVideoOff(camOn) : toast.show("No camera is available"))}
+          onToggleMic={() => void toggleDevice("audio")}
+          onToggleCam={() => void toggleDevice("video")}
           onTogglePanel={togglePanel}
           onReact={(emoji) => setReaction({ emoji, key: Date.now() })}
           onShare={() => toast.show("Screen sharing is not available yet")}
