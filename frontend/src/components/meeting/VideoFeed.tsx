@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/cn";
+import { playAudio, registerAudio, setAudioOutput } from "@/lib/webrtc/audioPlayback";
 
 /**
  * The picture of a stream. It never plays sound: the self view must not echo my own voice,
@@ -28,17 +29,34 @@ export function LiveVideo({ stream, mirror = false, className }: { stream: Media
   );
 }
 
-/** Plays the sound of one remote participant. Hidden. */
-export function RemoteAudio({ stream, participantId }: { stream: MediaStream; participantId: number }) {
+type RemoteAudioProps = {
+  stream: MediaStream;
+  participantId: number;
+  /** The chosen speaker. "" is the system default. */
+  speakerId: string;
+};
+
+/**
+ * Plays the sound of one remote participant. An <audio> element with no `controls` draws
+ * nothing, so it needs no hiding class. When the browser refuses to play (autoplay rules),
+ * audioPlayback.ts shows the "Sound is blocked" banner and plays it on the next click.
+ */
+export function RemoteAudio({ stream, participantId, speakerId }: RemoteAudioProps) {
   const ref = useRef<HTMLAudioElement>(null);
+  useEffect(() => {
+    const audio = ref.current;
+    return audio ? registerAudio(audio) : undefined;
+  }, []);
   useEffect(() => {
     const audio = ref.current;
     if (!audio) return;
     audio.srcObject = stream;
-    // The user clicked Join on this page, so the browser allows sound. Ignore a refusal.
-    audio.play().catch(() => {});
+    void playAudio(audio);
   }, [stream]);
-  return <audio ref={ref} autoPlay data-participant-id={participantId} className="hidden" />;
+  useEffect(() => {
+    if (ref.current) setAudioOutput(ref.current, speakerId);
+  }, [speakerId]);
+  return <audio ref={ref} autoPlay data-participant-id={participantId} />;
 }
 
 /** The tile content when there is no picture: the avatar and the name. */

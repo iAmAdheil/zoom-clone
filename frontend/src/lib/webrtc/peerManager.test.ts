@@ -9,6 +9,40 @@ import {
 } from "./peerManager";
 import type { SignalData } from "./signaling";
 
+type FakeTrack = { kind: string; id: string; readyState: "live" | "ended" };
+
+/** A local track. PeerManager reads only `kind`, `id` and `readyState`. */
+function track(kind: "audio" | "video", id = `${kind}-1`): FakeTrack {
+  return { kind, id, readyState: "live" };
+}
+
+function stream(...tracks: FakeTrack[]): MediaStream {
+  return { getTracks: () => tracks } as unknown as MediaStream;
+}
+
+// A sender whose replaceTrack takes the time that the test sets. A real browser can also take
+// time, so the calls of one peer must not overlap.
+class FakeSender {
+  static delays: number[] = [];
+  track: FakeTrack | null;
+  calls: (string | null)[] = [];
+  constructor(initial: FakeTrack | null) {
+    this.track = initial;
+  }
+  async replaceTrack(next: FakeTrack | null) {
+    this.calls.push(next?.id ?? null);
+    const delay = FakeSender.delays.shift() ?? 0;
+    if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+    this.track = next;
+  }
+}
+
+type FakeTransceiver = { kind: string; direction: string; sender: FakeSender; receiver: { track: { kind: string } } };
+
+function transceiver(kind: string, direction: string, initial: FakeTrack | null = null): FakeTransceiver {
+  return { kind, direction, sender: new FakeSender(initial), receiver: { track: { kind } } };
+}
+
 // A fake RTCPeerConnection with the parts that PeerManager uses. No network, no media.
 class FakePeerConnection {
   static all: FakePeerConnection[] = [];
@@ -16,8 +50,9 @@ class FakePeerConnection {
   iceConnectionState: RTCIceConnectionState = "new";
   localDescription: RTCSessionDescriptionInit | null = null;
   remoteDescription: RTCSessionDescriptionInit | null = null;
-  transceivers: string[] = [];
+  transceiverList: FakeTransceiver[] = [];
   candidates: RTCIceCandidateInit[] = [];
+  stats: Record<string, unknown>[] = [];
   offers = 0;
   closed = false;
   onicecandidate: ((event: { candidate: null }) => void) | null = null;
@@ -50,10 +85,29 @@ class FakePeerConnection {
   async setRemoteDescription(description: RTCSessionDescriptionInit) {
     this.remoteDescription = description;
     this.signalingState = description.type === "offer" ? "have-remote-offer" : "stable";
+    // Like a browser: the first offer makes one receiving transceiver per media line.
+    if (description.type === "offer" && this.transceiverList.length === 0)
+      this.transceiverList.push(transceiver("audio", "recvonly"), transceiver("video", "recvonly"));
   }
 
-  addTransceiver(kind: string, init: RTCRtpTransceiverInit) {
-    this.transceivers.push(`${kind}:${init.direction}`);
+  addTransceiver(trackOrKind: FakeTrack | string, init: RTCRtpTransceiverInit) {
+    const initial = typeof trackOrKind === "string" ? null : trackOrKind;
+    const added = transceiver(initial?.kind ?? (trackOrKind as string), init.direction ?? "sendrecv", initial);
+    this.transceiverList.push(added);
+    return added;
+  }
+
+  getTransceivers() {
+    return this.transceiverList;
+  }
+
+  /** The kind and direction of each transceiver, for short checks. */
+  get transceivers(): string[] {
+    return this.transceiverList.map((t) => `${t.kind}:${t.direction}`);
+  }
+
+  sender(kind: string): FakeSender {
+    return this.transceiverList.find((t) => t.kind === kind)!.sender;
   }
 
   async addIceCandidate(candidate: RTCIceCandidateInit) {
@@ -61,7 +115,7 @@ class FakePeerConnection {
   }
 
   async getStats() {
-    return new Map();
+    return new Map(this.stats.map((stat, i) => [String(i), stat]));
   }
 
   close() {
@@ -121,6 +175,7 @@ const kinds = (sent: Sent[], kind: SignalData["kind"]) => sent.filter((s) => s.d
 
 afterEach(() => {
   FakePeerConnection.all = [];
+  FakeSender.delays = [];
 });
 
 describe("offerer rule", () => {
@@ -164,13 +219,15 @@ describe("PeerManager", () => {
     expect(FakePeerConnection.all).toHaveLength(0);
   });
 
-  it("calls the sender of a hello, and asks to receive when it has no media", async () => {
+  it("calls the sender of a hello, with an empty sendrecv sender per kind when it has no media", async () => {
     const sent: Sent[] = [];
     const manager = makeManager(2, sent);
     manager.handleSignal(9, { kind: "hello", sid: "sid-9", peerSid: null });
     await settle();
     expect(sent).toEqual([{ from: 2, to: 9, data: { kind: "offer", sid: "sid-2", sdp: "offer", fresh: true } }]);
-    expect(FakePeerConnection.all[0].transceivers).toEqual(["audio:recvonly", "video:recvonly"]);
+    const pc = FakePeerConnection.all[0];
+    expect(pc.transceivers).toEqual(["audio:sendrecv", "video:sendrecv"]);
+    expect(pc.sender("audio").track).toBeNull();
   });
 
   it("connects an old client to a new client with one offer", async () => {
@@ -334,5 +391,150 @@ describe("PeerManager", () => {
     FakePeerConnection.all[0].setIce("failed");
     await settle();
     expect(kinds(sent, "offer")).toHaveLength(0);
+  });
+});
+
+// The rule: the audio sender always ends with `sending ? live microphone track : null`, the same
+// state that the Mute button shows. The UI and useTrackToggles read the same `is_muted` flag.
+describe("mute state of the senders", () => {
+  /** A manager with one open connection to peer 9, as the offerer. */
+  async function connected(localStream: MediaStream | null, sending = true) {
+    const manager = makeManager(2, []);
+    manager.setLocalStream(localStream);
+    manager.setSending("audio", sending);
+    manager.handleSignal(9, { kind: "hello", sid: "sid-9", peerSid: null });
+    await settle();
+    return { manager, pc: FakePeerConnection.all[0] };
+  }
+
+  it("sends the microphone when unmuted and nothing when muted at join", async () => {
+    const mic = track("audio");
+    expect((await connected(stream(mic), true)).pc.sender("audio").track).toBe(mic);
+    FakePeerConnection.all = [];
+    expect((await connected(stream(mic), false)).pc.sender("audio").track).toBeNull();
+  });
+
+  it("ends in the last state when slow replaceTrack calls overlap", async () => {
+    const mic = track("audio");
+    const { manager, pc } = await connected(stream(mic));
+    // The first call (mute) is slow, the second (unmute) is fast. Out of order, the mute
+    // would land last and leave me muted while the button says "Mute".
+    FakeSender.delays = [30, 0, 0];
+    manager.setSending("audio", false);
+    manager.setSending("audio", true);
+    await wait(60);
+    expect(pc.sender("audio").track).toBe(mic);
+
+    FakeSender.delays = [0, 30];
+    manager.setSending("audio", true);
+    manager.setSending("audio", false);
+    await wait(60);
+    expect(pc.sender("audio").track).toBeNull();
+  });
+
+  it("puts a microphone that opens late into the open connection, with no new offer", async () => {
+    const { manager, pc } = await connected(null);
+    const offers = pc.offers;
+    expect(pc.sender("audio").track).toBeNull();
+    const mic = track("audio");
+    manager.setLocalStream(stream(mic));
+    await settle();
+    expect(pc.sender("audio").track).toBe(mic);
+    expect(pc.offers).toBe(offers);
+  });
+
+  it("keeps a late microphone off while muted, and sends it on unmute", async () => {
+    const { manager, pc } = await connected(null, false);
+    const mic = track("audio");
+    manager.setLocalStream(stream(mic));
+    await settle();
+    expect(pc.sender("audio").track).toBeNull();
+    manager.setSending("audio", true);
+    await settle();
+    expect(pc.sender("audio").track).toBe(mic);
+  });
+
+  it("switches to a new microphone only while unmuted", async () => {
+    const first = track("audio", "mic-a");
+    const second = track("audio", "mic-b");
+    const { manager, pc } = await connected(stream(first));
+    manager.setLocalStream(stream(second));
+    await settle();
+    expect(pc.sender("audio").track).toBe(second);
+    manager.setSending("audio", false);
+    manager.setLocalStream(stream(first));
+    await settle();
+    expect(pc.sender("audio").track).toBeNull();
+  });
+
+  it("sends nothing for an ended track", async () => {
+    const mic = track("audio");
+    const { manager, pc } = await connected(stream(mic));
+    mic.readyState = "ended";
+    manager.setLocalStream(stream(mic));
+    await settle();
+    expect(pc.sender("audio").track).toBeNull();
+  });
+
+  it("answers with the offer's transceivers set to sendrecv and my tracks in them", async () => {
+    const mic = track("audio");
+    const cam = track("video");
+    const manager = makeManager(9, []);
+    manager.setLocalStream(stream(mic, cam));
+    manager.handleSignal(2, { kind: "offer", sid: "sid-2", sdp: "offer", fresh: true });
+    await settle();
+    const pc = FakePeerConnection.all[0];
+    expect(pc.transceivers).toEqual(["audio:sendrecv", "video:sendrecv"]);
+    expect(pc.sender("audio").track).toBe(mic);
+    expect(pc.sender("video").track).toBe(cam);
+  });
+});
+
+describe("remote audio monitor", () => {
+  const inbound = (bytes: number, audioLevel?: number) => ({ type: "inbound-rtp", kind: "audio", bytesReceived: bytes, audioLevel });
+
+  async function live(now: { t: number }) {
+    const manager = makeManager(2, [], { now: () => now.t });
+    manager.handleSignal(9, { kind: "hello", sid: "sid-9", peerSid: null });
+    await settle();
+    const pc = FakePeerConnection.all[0];
+    pc.setIce("connected");
+    return { manager, pc };
+  }
+
+  it("shows the speaker frame from the real audio level", async () => {
+    const now = { t: 0 };
+    const { manager, pc } = await live(now);
+    pc.stats = [inbound(1000, 0.2)];
+    await manager.sampleStats(9);
+    now.t = 500;
+    pc.stats = [inbound(2000, 0.2)];
+    await manager.sampleStats(9);
+    expect(manager.getSnapshot().info.get(9)?.speaking).toBe(true);
+
+    // Quiet for longer than the hold time: the frame goes away.
+    for (const t of [1000, 1500, 2000]) {
+      now.t = t;
+      pc.stats = [inbound(2000 + t, 0.001)];
+      await manager.sampleStats(9);
+    }
+    expect(manager.getSnapshot().info.get(9)?.speaking).toBe(false);
+  });
+
+  it("flags no audio after 5 seconds without new bytes, and clears it when bytes come", async () => {
+    const now = { t: 0 };
+    const { manager, pc } = await live(now);
+    pc.stats = [inbound(500, 0)];
+    await manager.sampleStats(9);
+    now.t = 4000;
+    await manager.sampleStats(9);
+    expect(manager.getSnapshot().info.get(9)?.noAudio).toBe(false);
+    now.t = 5000;
+    await manager.sampleStats(9);
+    expect(manager.getSnapshot().info.get(9)?.noAudio).toBe(true);
+    now.t = 5500;
+    pc.stats = [inbound(900, 0)];
+    await manager.sampleStats(9);
+    expect(manager.getSnapshot().info.get(9)?.noAudio).toBe(false);
   });
 });

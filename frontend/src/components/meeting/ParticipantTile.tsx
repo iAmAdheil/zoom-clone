@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
+import { useHeldFor } from "@/lib/hooks";
 import type { Participant } from "@/lib/types";
 import type { PeerInfo } from "@/lib/webrtc/peerManager";
 import { LiveVideo, TileAvatar } from "./VideoFeed";
@@ -16,6 +17,8 @@ type ParticipantTileProps = {
   /** The WebRTC connection to this participant. Not set for the self tile. */
   peer?: PeerInfo;
   reaction?: { emoji: string; key: number } | null;
+  /** Self tile: my microphone seems to give only silence. */
+  micProblem?: boolean;
   style?: CSSProperties;
   className?: string;
 };
@@ -42,6 +45,7 @@ export function ParticipantTile({
   stream,
   peer,
   reaction,
+  micProblem = false,
   style,
   className,
 }: ParticipantTileProps) {
@@ -50,6 +54,14 @@ export function ParticipantTile({
   // or the remote video has not arrived yet).
   const showVideo = !is_video_off && stream != null && stream.getVideoTracks().length > 0;
   const dot = peer ? qualityDot[dotKey(peer)] : null;
+  // The mute event and the first audio bytes can come at slightly different times, so the
+  // warning waits a moment before it shows.
+  const noAudio = useHeldFor(!is_muted && peer?.noAudio === true, 1500);
+  const audioWarning = micProblem
+    ? "Your microphone does not seem to pick up sound"
+    : noAudio
+      ? `No audio from ${name}`
+      : null;
 
   return (
     <figure
@@ -81,6 +93,14 @@ export function ParticipantTile({
         >
           <Icon name="alert" size={12} className="shrink-0 text-danger" strokeWidth={2} />
           Connection problem
+        </p>
+      ) : audioWarning ? (
+        <p
+          role="status"
+          className="absolute top-1 right-1 left-1 mx-auto flex w-fit max-w-[calc(100%-8px)] items-center gap-1 rounded-sm bg-room-overlay px-1.5 py-0.5 text-2xs font-bold text-room-text"
+        >
+          <Icon name="micOff" size={12} className="shrink-0 text-danger" strokeWidth={2} />
+          <span className="truncate">{audioWarning}</span>
         </p>
       ) : null}
 

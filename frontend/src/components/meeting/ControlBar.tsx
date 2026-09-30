@@ -3,15 +3,25 @@
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { MenuItem, Popover } from "@/components/ui/Popover";
-import { CaretButton, ControlButton } from "./ControlButton";
+import { ControlButton } from "./ControlButton";
+import { SplitControl, type MenuAction, type MenuGroup } from "./SplitControl";
 
 const REACTIONS = ["👏", "👍", "❤️", "😂", "😮", "🎉"] as const;
 
 export type Panel = "participants" | "chat" | null;
 
+export type DeviceMenu = { groups: MenuGroup[]; actions: MenuAction[] };
+
 type ControlBarProps = {
   micOn: boolean;
   camOn: boolean;
+  /** False when the page has no microphone track (not allowed, or no device). */
+  micAvailable: boolean;
+  camAvailable: boolean;
+  audioMenu: DeviceMenu;
+  videoMenu: DeviceMenu;
+  /** False when the browser cannot list the devices. Then the carets hide. */
+  showDeviceMenus: boolean;
   panel: Panel;
   participantCount: number;
   /** A side panel takes width, so Reactions and Share Screen move into More below 1024px. */
@@ -28,7 +38,7 @@ type ControlBarProps = {
   onEndForAll: () => void;
 };
 
-type Menu = "reactions" | "more" | "leave" | null;
+type Menu = "audio" | "video" | "reactions" | "more" | "leave" | null;
 
 /** Bottom toolbar of the Zoom meeting window. */
 export function ControlBar(props: ControlBarProps) {
@@ -68,22 +78,50 @@ export function ControlBar(props: ControlBarProps) {
       className="flex h-toolbar shrink-0 items-center justify-between gap-1 bg-room-bar px-1 sm:px-3"
     >
       <div className="flex items-center">
-        <ControlButton
-          icon={micOn ? "mic" : "micOff"}
-          label={micOn ? "Mute" : "Unmute"}
-          alert={!micOn}
-          aria-pressed={!micOn}
-          onClick={props.onToggleMic}
-        />
-        <CaretButton label="Audio options" />
-        <ControlButton
-          icon={camOn ? "video" : "videoOff"}
-          label={camOn ? "Stop Video" : "Start Video"}
-          alert={!camOn}
-          aria-pressed={!camOn}
-          onClick={props.onToggleCam}
-        />
-        <CaretButton label="Video options" />
+        <SplitControl
+          label="Audio options"
+          open={menu === "audio"}
+          onToggle={() => toggle("audio")}
+          onClose={close}
+          groups={props.audioMenu.groups}
+          actions={props.audioMenu.actions}
+          emptyText="No microphone was found."
+          showCaret={props.showDeviceMenus}
+        >
+          <ControlButton
+            grouped
+            icon={micOn ? "mic" : "micOff"}
+            label={micOn ? "Mute" : "Unmute"}
+            alert={!micOn}
+            badge={props.micAvailable ? undefined : "!"}
+            title={props.micAvailable ? undefined : "Microphone not allowed. Click to allow it."}
+            aria-label={props.micAvailable ? undefined : "Unmute. Microphone not allowed"}
+            aria-pressed={!micOn}
+            onClick={props.onToggleMic}
+          />
+        </SplitControl>
+        <SplitControl
+          label="Video options"
+          open={menu === "video"}
+          onToggle={() => toggle("video")}
+          onClose={close}
+          groups={props.videoMenu.groups}
+          actions={props.videoMenu.actions}
+          emptyText="No camera was found."
+          showCaret={props.showDeviceMenus}
+        >
+          <ControlButton
+            grouped
+            icon={camOn ? "video" : "videoOff"}
+            label={camOn ? "Stop Video" : "Start Video"}
+            alert={!camOn}
+            badge={props.camAvailable ? undefined : "!"}
+            title={props.camAvailable ? undefined : "Camera not allowed. Click to allow it."}
+            aria-label={props.camAvailable ? undefined : "Start Video. Camera not allowed"}
+            aria-pressed={!camOn}
+            onClick={props.onToggleCam}
+          />
+        </SplitControl>
       </div>
 
       <div className="flex items-center">
